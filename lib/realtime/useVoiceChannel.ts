@@ -69,16 +69,24 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
       };
 
       // Remote audio
-      pc.ontrack = ({ streams }) => {
-        const stream = streams[0];
-        if (!stream) return;
+      pc.ontrack = ({ track, streams }) => {
+        // Some browsers pass streams=[], fall back to wrapping the track
+        const stream = streams[0] ?? (() => {
+          const s = new MediaStream();
+          s.addTrack(track);
+          return s;
+        })();
         let audio = audioElemsRef.current.get(peerId);
         if (!audio) {
           audio = new Audio();
-          audio.autoplay = true;
           audioElemsRef.current.set(peerId, audio);
         }
-        audio.srcObject = stream;
+        if (audio.srcObject !== stream) {
+          audio.srcObject = stream;
+          audio.play().catch(() => {
+            // Autoplay blocked — will resume on next user gesture
+          });
+        }
       };
 
       pcsRef.current.set(peerId, pc);
