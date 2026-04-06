@@ -3,17 +3,19 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Download } from "lucide-react";
 import { saveNotes } from "@/actions/notes";
 
 type NotesMode = "edit" | "preview" | "split";
 
 interface NotesProps {
   roomId: string;
+  roomName: string;
   content: string;
   onChange: (content: string) => void;
 }
 
-export function Notes({ roomId, content, onChange }: NotesProps) {
+export function Notes({ roomId, roomName, content, onChange }: NotesProps) {
   const [mode, setMode] = useState<NotesMode>("split");
   const [isPending, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -62,9 +64,30 @@ export function Notes({ roomId, content, onChange }: NotesProps) {
             </button>
           ))}
         </div>
-        <span className="text-xs" style={{ color: "var(--zen-muted)" }}>
-          {isPending ? "Saving…" : "Markdown supported"}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs" style={{ color: "var(--zen-muted)" }}>
+            {isPending ? "Saving…" : "Markdown supported"}
+          </span>
+          <button
+            onClick={() => {
+              const blob = new Blob([content], { type: "text/markdown" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              const slug = roomName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+              a.download = `${slug}-${new Date().toISOString().slice(0, 10)}.md`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            disabled={!content}
+            className="flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors disabled:opacity-40"
+            style={{ color: "var(--zen-sage-dark)" }}
+            title="Download notes as Markdown"
+          >
+            <Download className="w-3 h-3" />
+            Download
+          </button>
+        </div>
       </div>
 
       {/* Editor / Preview */}

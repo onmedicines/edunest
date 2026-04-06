@@ -497,6 +497,7 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
             {activeTab === "notes" && (
               <Notes
                 roomId={room.id}
+                roomName={room.name}
                 content={notes}
                 onChange={handleNotesChange}
               />
