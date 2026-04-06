@@ -13,6 +13,12 @@ export const EVENTS = {
   RESOURCE_REMOVE: "resource:remove",
   TODO_UPDATE: "todo:update",
   HAND_TOGGLE: "hand:toggle",
+  VOICE_JOIN: "voice:join",
+  VOICE_LEAVE: "voice:leave",
+  VOICE_OFFER: "voice:offer",
+  VOICE_ANSWER: "voice:answer",
+  VOICE_ICE: "voice:ice",
+  VOICE_SPEAKING: "voice:speaking",
 } as const;
 
 // Broadcast payload types
@@ -54,4 +60,44 @@ export interface TodoUpdatePayload {
 export interface HandTogglePayload {
   userId: string;
   isRaised: boolean;
+}
+
+// ── Voice / WebRTC payloads ────────────────────────────────────────────────
+
+export interface VoiceJoinPayload {
+  userId: string;
+  username: string;
+}
+
+export interface VoiceLeavePayload {
+  userId: string;
+}
+
+export interface VoiceOfferPayload {
+  from: string;
+  to: string;
+  sdp: RTCSessionDescriptionInit;
+}
+
+export interface VoiceAnswerPayload {
+  from: string;
+  to: string;
+  sdp: RTCSessionDescriptionInit;
+}
+
+export interface VoiceIcePayload {
+  from: string;
+  to: string;
+  candidate: RTCIceCandidateInit;
+}
+
+export interface VoiceSpeakingPayload {
+  userId: string;
+  isSpeaking: boolean;
+}
+
+export interface VoiceParticipant {
+  userId: string;
+  username: string;
+  isSpeaking: boolean;
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CHANNEL_NAME, EVENTS } from "@/lib/realtime/types";
 import { getRemainingSeconds } from "@/lib/utils";
+import { useVoiceChannel } from "@/lib/realtime/useVoiceChannel";
 import type {
   Message, Resource, Todo, TimerState, VideoState,
   PresenceUser, Room,
@@ -79,6 +80,16 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
     },
     []
   );
+
+  // ── Voice channel ──────────────────────────────────────────────────────
+  const {
+    isConnected: voiceConnected,
+    isSpeaking: voiceSpeaking,
+    participants: voiceParticipants,
+    connect: voiceConnect,
+    disconnect: voiceDisconnect,
+    registerListeners: voiceRegisterListeners,
+  } = useVoiceChannel({ userId: currentUser.id, username: currentUser.username });
 
   // ── Realtime setup ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -240,6 +251,9 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
       setTypingUsers(typing);
     });
 
+    // ── Voice (registered before subscribe) ──
+    voiceRegisterListeners(channel as Parameters<typeof voiceRegisterListeners>[0]);
+
     // ── Subscribe ──
     channel.subscribe(async (status) => {
       if (status === "SUBSCRIBED") {
@@ -263,7 +277,7 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [room.id, currentUser.id, currentUser.username, currentUser.avatarUrl]);
+  }, [room.id, currentUser.id, currentUser.username, currentUser.avatarUrl, voiceRegisterListeners]);
 
   // ── Typing indicator helpers ───────────────────────────────────────────
   const sendTypingStart = useCallback(() => {
@@ -442,6 +456,11 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
           currentUserId={currentUser.id}
           isHandRaised={isHandRaised}
           onHandToggle={handleHandToggle}
+          voiceConnected={voiceConnected}
+          voiceSpeaking={voiceSpeaking}
+          voiceParticipants={voiceParticipants}
+          onVoiceConnect={voiceConnect}
+          onVoiceDisconnect={voiceDisconnect}
         />
 
         {/* Content area */}

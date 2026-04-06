@@ -6,12 +6,20 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getInitials, generateAvatarColor } from "@/lib/utils";
 import type { PresenceUser } from "@/types/database";
+import type { VoiceParticipant } from "@/lib/realtime/types";
+import { VoiceChannel } from "./VoiceChannel";
 
 interface UsersSidebarProps {
   users: PresenceUser[];
   currentUserId: string;
   isHandRaised: boolean;
   onHandToggle: (raised: boolean) => void;
+  // Voice
+  voiceConnected: boolean;
+  voiceSpeaking: boolean;
+  voiceParticipants: VoiceParticipant[];
+  onVoiceConnect: () => Promise<void>;
+  onVoiceDisconnect: () => void;
 }
 
 export function UsersSidebar({
@@ -19,7 +27,17 @@ export function UsersSidebar({
   currentUserId,
   isHandRaised,
   onHandToggle,
+  voiceConnected,
+  voiceSpeaking,
+  voiceParticipants,
+  onVoiceConnect,
+  onVoiceDisconnect,
 }: UsersSidebarProps) {
+  // Build a set of speaking user ids for fast lookup
+  const speakingIds = new Set(
+    voiceParticipants.filter((p) => p.isSpeaking).map((p) => p.userId)
+  );
+
   return (
     <div
       className="w-48 flex-shrink-0 flex flex-col border-r"
@@ -45,6 +63,7 @@ export function UsersSidebar({
             const isMe = user.userId === currentUserId;
             const initials = getInitials(user.username);
             const avatarBg = generateAvatarColor(user.userId);
+            const isSpeaking = speakingIds.has(user.userId);
 
             return (
               <div
@@ -55,7 +74,14 @@ export function UsersSidebar({
                 }}
               >
                 <div className="relative flex-shrink-0">
-                  <Avatar className="w-7 h-7">
+                  <Avatar
+                    className="w-7 h-7"
+                    style={
+                      isSpeaking
+                        ? { outline: "2px solid var(--zen-sage)", outlineOffset: "1px" }
+                        : undefined
+                    }
+                  >
                     {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.username} />}
                     <AvatarFallback style={{ background: avatarBg }}>
                       {initials}
@@ -91,6 +117,16 @@ export function UsersSidebar({
           )}
         </div>
       </ScrollArea>
+
+      {/* Voice channel */}
+      <VoiceChannel
+        isConnected={voiceConnected}
+        isSpeaking={voiceSpeaking}
+        participants={voiceParticipants}
+        currentUserId={currentUserId}
+        onConnect={onVoiceConnect}
+        onDisconnect={onVoiceDisconnect}
+      />
 
       {/* Hand raise button */}
       <div className="p-3 border-t" style={{ borderColor: "var(--zen-border)" }}>
