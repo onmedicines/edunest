@@ -25,6 +25,8 @@ declare global {
         el: HTMLElement,
         opts: {
           videoId: string;
+          width?: string | number;
+          height?: string | number;
           playerVars?: Record<string, number | string>;
           events?: Record<string, (...args: unknown[]) => void>;
         }
@@ -94,11 +96,15 @@ export function VideoPlayer({ videoState, onVideoChange, currentUserId }: VideoP
     playerRef.current = null;
 
     const el = document.createElement("div");
+    el.style.width = "100%";
+    el.style.height = "100%";
     playerContainerRef.current.innerHTML = "";
     playerContainerRef.current.appendChild(el);
 
     playerRef.current = new window.YT.Player(el, {
       videoId: videoState.videoId,
+      width: "100%",
+      height: "100%",
       playerVars: {
         autoplay: 0,
         rel: 0,
@@ -168,12 +174,11 @@ export function VideoPlayer({ videoState, onVideoChange, currentUserId }: VideoP
       </div>
 
       {/* Player */}
-      <div className="flex-1 flex items-center justify-center overflow-hidden" style={{ background: "#000" }}>
+      <div className="flex-1 overflow-hidden" style={{ background: "#000" }}>
         {videoState.videoId ? (
           <div
             ref={playerContainerRef}
             className="w-full h-full"
-            style={{ aspectRatio: "16/9", maxHeight: "100%" }}
           />
         ) : (
           <div className="text-center p-8">
