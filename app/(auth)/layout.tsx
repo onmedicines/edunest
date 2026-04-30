@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { StudySceneArt } from "./_components/StudySceneArt";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function AuthLayout({
   children,
@@ -38,10 +39,12 @@ export default function AuthLayout({
               EduNest
             </span>
           </Link>
+          <ThemeToggle />
         </div>
 
         {/* Desktop top-right home link */}
-        <div className="hidden lg:flex absolute top-6 right-8 z-10">
+        <div className="hidden lg:flex absolute top-6 right-8 z-10 items-center gap-2">
+          <ThemeToggle />
           <Link
             href="/"
             className="text-sm hover:underline"

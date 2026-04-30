@@ -5,6 +5,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Presentation, ArrowRight, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface LandingPageProps {
   isAuthed: boolean;
@@ -86,6 +87,7 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
           </span>
         </Link>
         <nav className="flex items-center gap-2 sm:gap-3">
+          <ThemeToggle />
           <Link
             href="/presentation/index.html"
             target="_blank"

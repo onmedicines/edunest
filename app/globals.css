@@ -5,7 +5,44 @@
    Variable names kept (--zen-*) so existing components inherit automatically.
 ────────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Surfaces */
+  /* Surfaces — light */
+  --zen-bg:        #f4f6f4;
+  --zen-surface:   #ffffff;
+  --zen-surface-2: #eaeeea;
+  --zen-border:    #d0d8d0;
+
+  /* Text */
+  --zen-text:  #1c2b20;
+  --zen-muted: #5a7060;
+
+  /* Accent (sage) */
+  --zen-sage:       #3d7a52;
+  --zen-sage-dark:  #2e6040;
+  --zen-sage-light: #d4eadb;
+  --deck-accent-dim: #7ab58a;
+
+  /* Blue */
+  --zen-blue:       #2e6e96;
+  --zen-blue-dark:  #1e5a80;
+  --zen-blue-light: #cce4f4;
+  --deck-blue-dim:  #7ab4d4;
+
+  /* Semantic accents */
+  --zen-error:       #b92b1e;
+  --zen-error-light: #fce8e6;
+  --deck-red-dim:    #e08880;
+  --deck-amber:      #b86e00;
+  --deck-amber-bg:   #fef3d8;
+  --deck-amber-dim:  #e4a840;
+  --deck-purple:     #6a4eaa;
+  --deck-purple-bg:  #ede8f8;
+  --deck-purple-dim: #9a7ed0;
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  /* Surfaces — dark */
   --zen-bg:        #0a0d12;
   --zen-surface:   #111418;
   --zen-surface-2: #181d24;
@@ -17,8 +54,8 @@
 
   /* Accent (sage) */
   --zen-sage:       #5c9a70;
-  --zen-sage-dark:  #7ab78a;   /* brighter — used for hover + accent text on dark */
-  --zen-sage-light: #1a2e22;   /* accent-bg — dark green tint */
+  --zen-sage-dark:  #7ab78a;
+  --zen-sage-light: #1a2e22;
   --deck-accent-dim: #3d7a52;
 
   /* Blue */
@@ -27,7 +64,7 @@
   --zen-blue-light: #101e2e;
   --deck-blue-dim:  #2a4a6a;
 
-  /* Semantic accents from the deck */
+  /* Semantic accents */
   --zen-error:       #c0392b;
   --zen-error-light: #2a1414;
   --deck-red-dim:    #8b2222;
@@ -37,26 +74,6 @@
   --deck-purple:     #8b6bc0;
   --deck-purple-bg:  #1e1630;
   --deck-purple-dim: #3a2a60;
-
-  --radius: 0.5rem;
-}
-
-/* The deck is dark-only; .dark mirrors :root so the existing theme toggle is a no-op */
-.dark {
-  --zen-bg:        #0a0d12;
-  --zen-surface:   #111418;
-  --zen-surface-2: #181d24;
-  --zen-border:    #222830;
-  --zen-text:  #e4e8e4;
-  --zen-muted: #6b7d72;
-  --zen-sage:       #5c9a70;
-  --zen-sage-dark:  #7ab78a;
-  --zen-sage-light: #1a2e22;
-  --zen-blue:       #4a90b8;
-  --zen-blue-dark:  #6aaed3;
-  --zen-blue-light: #101e2e;
-  --zen-error:       #c0392b;
-  --zen-error-light: #2a1414;
 }
 
 @theme inline {
@@ -82,6 +99,10 @@
 
 html {
   height: 100%;
+  color-scheme: light;
+}
+
+html.dark {
   color-scheme: dark;
 }
 

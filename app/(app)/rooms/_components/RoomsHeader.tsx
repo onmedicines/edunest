@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { BookOpen, LogOut, Presentation } from "lucide-react";
 import { logout } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface RoomsHeaderProps {
   username: string;
@@ -38,16 +39,6 @@ export function RoomsHeader({ username }: RoomsHeaderProps) {
         >
           EduNest
         </span>
-        <span
-          className="hidden sm:inline-flex font-mono text-[10px] px-1.5 py-0.5 rounded ml-1"
-          style={{
-            color: "var(--zen-muted)",
-            border: "1px solid var(--zen-border)",
-            background: "var(--zen-surface-2)",
-          }}
-        >
-          v0.1
-        </span>
       </Link>
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <Link
@@ -67,6 +58,7 @@ export function RoomsHeader({ username }: RoomsHeaderProps) {
         >
           {username}
         </span>
+        <ThemeToggle />
         <form action={logout}>
           <Button variant="ghost" size="icon-sm" type="submit" title="Sign out">
             <LogOut className="w-4 h-4" />

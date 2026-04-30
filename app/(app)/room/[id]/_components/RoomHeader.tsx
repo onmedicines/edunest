@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LogOut, Settings, Sun, Moon, Users, BookOpen } from "lucide-react";
+import { LogOut, Settings, Users, BookOpen } from "lucide-react";
 import { logout } from "@/actions/auth";
 import { updateRoom } from "@/actions/rooms";
-import { useTheme } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,6 @@ interface RoomHeaderProps {
 }
 
 export function RoomHeader({ room, currentUser, connectionStatus, onlineCount }: RoomHeaderProps) {
-  const { resolvedTheme, setTheme } = useTheme();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [roomName, setRoomName] = useState(room.name);
   const [roomDesc, setRoomDesc] = useState(room.description ?? "");
@@ -96,18 +95,7 @@ export function RoomHeader({ room, currentUser, connectionStatus, onlineCount }:
           </span>
 
           {/* Theme toggle */}
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            title="Toggle theme"
-          >
-            {resolvedTheme === "dark" ? (
-              <Sun className="w-4 h-4" />
-            ) : (
-              <Moon className="w-4 h-4" />
-            )}
-          </Button>
+          <ThemeToggle />
 
           {/* Settings */}
           <Button
