@@ -48,7 +48,6 @@ export function ResourceLibrary({
   const [title, setTitle] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,15 +129,13 @@ export function ResourceLibrary({
           {resources.map((resource) => {
             const Icon = TYPE_ICONS[resource.resource_type] ?? Link2;
             const domain = extractDomain(resource.url);
-            const isSelected = previewUrl === resource.url;
-
             return (
               <div
                 key={resource.id}
                 className="rounded-lg p-3 transition-colors"
                 style={{
-                  background: isSelected ? "var(--zen-sage-light)" : "var(--zen-surface-2)",
-                  border: `1px solid ${isSelected ? "var(--zen-sage)" : "var(--zen-border)"}`,
+                  background: "var(--zen-surface-2)",
+                  border: "1px solid var(--zen-border)",
                 }}
               >
                 <div className="flex items-start gap-2">
@@ -157,14 +154,6 @@ export function ResourceLibrary({
                     </p>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
-                    <button
-                      onClick={() => setPreviewUrl(isSelected ? null : resource.url)}
-                      className="p-1 rounded hover:opacity-70 transition-opacity text-xs"
-                      style={{ color: "var(--zen-sage-dark)" }}
-                      title="Preview"
-                    >
-                      {isSelected ? "Close" : "Preview"}
-                    </button>
                     <a
                       href={resource.url}
                       target="_blank"
@@ -186,18 +175,6 @@ export function ResourceLibrary({
                     </button>
                   </div>
                 </div>
-
-                {/* Inline preview */}
-                {isSelected && (
-                  <div className="mt-2 rounded-lg overflow-hidden border" style={{ borderColor: "var(--zen-border)", height: "200px" }}>
-                    <iframe
-                      src={resource.url}
-                      title={resource.title}
-                      className="w-full h-full"
-                      sandbox="allow-scripts allow-same-origin allow-forms"
-                    />
-                  </div>
-                )}
               </div>
             );
           })}
