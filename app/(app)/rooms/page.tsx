@@ -18,6 +18,7 @@ export default async function RoomsPage() {
   const { data: rooms } = await supabase
     .from("rooms")
     .select("*")
+    .eq("created_by", user.id)
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -26,11 +27,11 @@ export default async function RoomsPage() {
       {/* Header */}
       <header className="zen-card rounded-none border-x-0 border-t-0 px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xl flex-shrink-0">📚</span>
+          <span className="text-xl shrink-0">📚</span>
           <span className="font-semibold text-base sm:text-lg truncate" style={{ color: "var(--zen-text)" }}>Study Room</span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <span className="text-sm hidden sm:inline truncate max-w-[160px]" style={{ color: "var(--zen-muted)" }}>
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <span className="text-sm hidden sm:inline truncate max-w-40" style={{ color: "var(--zen-muted)" }}>
             {username}
           </span>
           <form action={logout}>
@@ -74,7 +75,7 @@ export default async function RoomsPage() {
                       <p className="text-xs mt-0.5 truncate" style={{ color: "var(--zen-muted)" }}>{room.description}</p>
                     )}
                   </div>
-                  <span className="text-xs font-mono font-semibold px-2 py-1 rounded flex-shrink-0" style={{ background: "var(--zen-sage-light)", color: "var(--zen-sage-dark)" }}>
+                  <span className="text-xs font-mono font-semibold px-2 py-1 rounded shrink-0" style={{ background: "var(--zen-sage-light)", color: "var(--zen-sage-dark)" }}>
                     {room.code}
                   </span>
                 </Link>
