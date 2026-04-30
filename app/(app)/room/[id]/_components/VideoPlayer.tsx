@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { PlayCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { VideoState } from "@/types/database";
+
+export interface VideoPlayerHandle {
+  getLiveState: () => VideoState | null;
+}
 
 function extractVideoId(input: string): string | null {
   const patterns = [
@@ -59,13 +63,41 @@ interface VideoPlayerProps {
   currentUserId: string;
 }
 
-export function VideoPlayer({ videoState, onVideoChange, currentUserId }: VideoPlayerProps) {
+export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(function VideoPlayer(
+  { videoState, onVideoChange },
+  ref
+) {
   const [urlInput, setUrlInput] = useState("");
   const [ytReady, setYtReady] = useState(false);
   const playerRef = useRef<YTPlayer | null>(null);
+  const playerReadyRef = useRef(false);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const ignoreEventsRef = useRef(false);
   const lastVideoIdRef = useRef<string | null>(null);
+  const videoStateRef = useRef(videoState);
+  useEffect(() => {
+    videoStateRef.current = videoState;
+  }, [videoState]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      getLiveState: () => {
+        const id = videoStateRef.current.videoId;
+        if (!id) return null;
+        const live = playerRef.current?.getCurrentTime();
+        return {
+          videoId: id,
+          isPlaying: videoStateRef.current.isPlaying,
+          currentTime:
+            typeof live === "number" && !Number.isNaN(live)
+              ? live
+              : videoStateRef.current.currentTime,
+        };
+      },
+    }),
+    []
+  );
 
   // Load YouTube IFrame API
   useEffect(() => {
@@ -92,6 +124,7 @@ export function VideoPlayer({ videoState, onVideoChange, currentUserId }: VideoP
 
     // New video — (re)create player
     lastVideoIdRef.current = videoState.videoId;
+    playerReadyRef.current = false;
     playerRef.current?.destroy();
     playerRef.current = null;
 
@@ -100,6 +133,8 @@ export function VideoPlayer({ videoState, onVideoChange, currentUserId }: VideoP
     el.style.height = "100%";
     playerContainerRef.current.innerHTML = "";
     playerContainerRef.current.appendChild(el);
+
+    const initialStart = Math.max(0, Math.floor(videoState.currentTime));
 
     playerRef.current = new window.YT.Player(el, {
       videoId: videoState.videoId,
@@ -110,8 +145,27 @@ export function VideoPlayer({ videoState, onVideoChange, currentUserId }: VideoP
         rel: 0,
         modestbranding: 1,
         enablejsapi: 1,
+        start: initialStart,
       },
       events: {
+        onReady: () => {
+          if (!playerRef.current) return;
+          playerReadyRef.current = true;
+          // Only sync if there is meaningful state to apply (late-joiner path).
+          // For a fresh URL load the player already starts at 0 paused — skip
+          // touching it so YouTube's thumbnail/cued state is preserved.
+          const target = videoStateRef.current;
+          const needsSeek = target.currentTime > 0.5;
+          const needsPlay = target.isPlaying;
+          if (!needsSeek && !needsPlay) return;
+
+          ignoreEventsRef.current = true;
+          if (needsSeek) playerRef.current.seekTo(target.currentTime, true);
+          if (needsPlay) playerRef.current.playVideo();
+          setTimeout(() => {
+            ignoreEventsRef.current = false;
+          }, 500);
+        },
         onStateChange: (event: unknown) => {
           if (ignoreEventsRef.current) return;
           const e = event as { data: number };
@@ -132,7 +186,7 @@ export function VideoPlayer({ videoState, onVideoChange, currentUserId }: VideoP
 
   // Sync play/pause/seek from remote
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!playerRef.current || !playerReadyRef.current) return;
     ignoreEventsRef.current = true;
     setTimeout(() => {
       ignoreEventsRef.current = false;
@@ -208,4 +262,4 @@ export function VideoPlayer({ videoState, onVideoChange, currentUserId }: VideoP
       )}
     </div>
   );
-}
+});

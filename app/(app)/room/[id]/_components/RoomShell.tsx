@@ -12,13 +12,13 @@ import type {
 } from "@/types/database";
 import type {
   ChatNewPayload, ChatReactionPayload, NotesUpdatePayload,
-  VideoStatePayload, TimerStatePayload, ResourceAddPayload,
-  ResourceRemovePayload, TodoUpdatePayload, HandTogglePayload,
+  VideoStatePayload, VideoStateRequestPayload, TimerStatePayload,
+  ResourceAddPayload, ResourceRemovePayload, TodoUpdatePayload, HandTogglePayload,
 } from "@/lib/realtime/types";
 
 import { Chat } from "./Chat";
 import { Notes } from "./Notes";
-import { VideoPlayer } from "./VideoPlayer";
+import { VideoPlayer, type VideoPlayerHandle } from "./VideoPlayer";
 import { Timer } from "./Timer";
 import { UsersSidebar } from "./UsersSidebar";
 import { ResourceLibrary } from "./ResourceLibrary";
@@ -74,6 +74,7 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
   const sentMessageIds = useRef<Set<string>>(new Set());
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
+  const videoPlayerRef = useRef<VideoPlayerHandle>(null);
 
   // ── Broadcast helpers ──────────────────────────────────────────────────
   const broadcast = useCallback(
@@ -186,6 +187,22 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
       }
     );
 
+    // ── Video state request (late-joiner sync) ──
+    channel.on<VideoStateRequestPayload>(
+      "broadcast",
+      { event: EVENTS.VIDEO_STATE_REQUEST },
+      ({ payload }) => {
+        if (payload.requesterId === currentUser.id) return;
+        const live = videoPlayerRef.current?.getLiveState();
+        if (!live) return;
+        channelRef.current?.send({
+          type: "broadcast",
+          event: EVENTS.VIDEO_STATE,
+          payload: { ...live, triggeredBy: currentUser.id },
+        });
+      }
+    );
+
     // ── Timer ──
     channel.on<TimerStatePayload>(
       "broadcast",
@@ -266,6 +283,12 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
           avatarUrl: currentUser.avatarUrl,
           isHandRaised: false,
           joinedAt: new Date().toISOString(),
+        });
+        // Ask peers for current video state (late-joiner sync)
+        channel.send({
+          type: "broadcast",
+          event: EVENTS.VIDEO_STATE_REQUEST,
+          payload: { requesterId: currentUser.id },
         });
       } else if (status === "CHANNEL_ERROR") {
         setConnectionStatus("reconnecting");
@@ -541,7 +564,7 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
           </div>
 
           {/* Tab content */}
-          <div className="flex-1 overflow-hidden" style={{ background: "var(--zen-surface)" }}>
+          <div className="flex-1 overflow-hidden relative" style={{ background: "var(--zen-surface)" }}>
             {activeTab === "chat" && (
               <Chat
                 roomId={room.id}
@@ -561,13 +584,23 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
                 onChange={handleNotesChange}
               />
             )}
-            {activeTab === "video" && (
+            {/* VideoPlayer stays mounted so playback survives tab switches and
+                the player remains available to respond to late-joiner sync requests. */}
+            <div
+              className="absolute inset-0"
+              style={{
+                visibility: activeTab === "video" ? "visible" : "hidden",
+                pointerEvents: activeTab === "video" ? "auto" : "none",
+              }}
+              aria-hidden={activeTab !== "video"}
+            >
               <VideoPlayer
+                ref={videoPlayerRef}
                 videoState={videoState}
                 onVideoChange={handleVideoChange}
                 currentUserId={currentUser.id}
               />
-            )}
+            </div>
             {activeTab === "resources" && (
               <ResourceLibrary
                 roomId={room.id}

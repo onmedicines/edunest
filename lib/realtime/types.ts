@@ -8,6 +8,7 @@ export const EVENTS = {
   CHAT_REACTION: "chat:reaction",
   NOTES_UPDATE: "notes:update",
   VIDEO_STATE: "video:state",
+  VIDEO_STATE_REQUEST: "video:state-request",
   TIMER_STATE: "timer:state",
   RESOURCE_ADD: "resource:add",
   RESOURCE_REMOVE: "resource:remove",
@@ -39,6 +40,10 @@ export interface NotesUpdatePayload {
 
 export interface VideoStatePayload extends VideoState {
   triggeredBy: string;
+}
+
+export interface VideoStateRequestPayload {
+  requesterId: string;
 }
 
 export interface TimerStatePayload extends TimerState {
