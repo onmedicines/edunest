@@ -65,10 +65,10 @@ const fadeUp = {
 export function LandingPage({ isAuthed, username }: LandingPageProps) {
   const primaryHref = isAuthed ? "/rooms" : "/signup";
   const primaryLabel = isAuthed ? "Open your rooms" : "Get started";
-  const [selectedFeature, setSelectedFeature] = useState(0);
+  const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: "var(--zen-bg)" }}>
+    <div className="relative min-h-screen overflow-hidden" style={{ background: "var(--zen-bg)" }} onClick={() => setSelectedFeature(null)}>
       {/* ── Nav ── */}
       <header className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5">
@@ -399,7 +399,7 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
             const rot = offset * 6;
             // held-in-hand curve: center cards high, edges droop down (positive y = lower)
             const baseY = Math.pow(offset, 2) * 8;
-            const isSelected = selectedFeature === i;
+            const isSelected = selectedFeature !== null && selectedFeature === i;
             return (
               <motion.div
                 key={f.title}
@@ -455,12 +455,12 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
         {/* Card switcher buttons (desktop) */}
         <div className="hidden lg:flex justify-center flex-wrap gap-2 mt-2 mb-2">
           {features.map((f, i) => {
-            const isActive = selectedFeature === i;
+            const isActive = selectedFeature !== null && selectedFeature === i;
             return (
               <button
                 key={f.title}
                 type="button"
-                onClick={() => setSelectedFeature(i)}
+                onClick={(e) => { e.stopPropagation(); setSelectedFeature(i); }}
                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                 style={{
                   background: isActive ? f.color : "var(--zen-surface-2)",
