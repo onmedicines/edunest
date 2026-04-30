@@ -1,6 +1,6 @@
 "use client";
 
-import { Hand } from "lucide-react";
+import { Hand, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,6 +20,9 @@ interface UsersSidebarProps {
   voiceParticipants: VoiceParticipant[];
   onVoiceConnect: () => Promise<void>;
   onVoiceDisconnect: () => void;
+  // Mobile drawer
+  open: boolean;
+  onClose: () => void;
 }
 
 export function UsersSidebar({
@@ -32,6 +35,8 @@ export function UsersSidebar({
   voiceParticipants,
   onVoiceConnect,
   onVoiceDisconnect,
+  open,
+  onClose,
 }: UsersSidebarProps) {
   // Build a set of speaking user ids for fast lookup
   const speakingIds = new Set(
@@ -39,8 +44,10 @@ export function UsersSidebar({
   );
 
   return (
-    <div
-      className="w-48 flex-shrink-0 flex flex-col border-r"
+    <aside
+      className={`flex-shrink-0 flex flex-col border-r transition-transform z-40 lg:relative lg:w-48 lg:translate-x-0 fixed inset-y-0 left-0 w-64 ${
+        open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      }`}
       style={{
         background: "var(--zen-surface)",
         borderColor: "var(--zen-border)",
@@ -54,6 +61,14 @@ export function UsersSidebar({
         <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--zen-muted)" }}>
           Online · {users.length}
         </span>
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1 rounded hover:opacity-70"
+          aria-label="Close users panel"
+          style={{ color: "var(--zen-muted)" }}
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* User list */}
@@ -140,6 +155,6 @@ export function UsersSidebar({
           {isHandRaised ? "Lower hand" : "Raise hand"}
         </Button>
       </div>
-    </div>
+    </aside>
   );
 }

@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-type ActionState = { error?: string; confirmEmail?: boolean } | null;
+type ActionState = { error?: string } | null;
 
 export async function loginWithPassword(
   _prevState: ActionState,
@@ -48,7 +48,7 @@ export async function signupWithPassword(
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -58,11 +58,6 @@ export async function signupWithPassword(
 
   if (error) {
     return { error: error.message };
-  }
-
-  // If session is null, Supabase requires email confirmation before login
-  if (!data.session) {
-    return { confirmEmail: true };
   }
 
   redirect("/rooms");

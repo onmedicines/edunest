@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, Circle, X } from "lucide-react";
 import { addTodo, toggleTodo, removeTodo } from "@/actions/todos";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,11 @@ interface TodoListProps {
   todos: Todo[];
   currentUser: { id: string; username: string };
   onChange: (todos: Todo[]) => void;
+  open: boolean;
+  onClose: () => void;
 }
 
-export function TodoList({ roomId, todos, currentUser, onChange }: TodoListProps) {
+export function TodoList({ roomId, todos, currentUser, onChange, open, onClose }: TodoListProps) {
   const [draft, setDraft] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -54,8 +56,10 @@ export function TodoList({ roomId, todos, currentUser, onChange }: TodoListProps
   const total = todos.length;
 
   return (
-    <div
-      className="w-52 flex-shrink-0 flex flex-col border-l"
+    <aside
+      className={`flex-shrink-0 flex flex-col border-l transition-transform z-40 lg:relative lg:w-52 lg:translate-x-0 fixed inset-y-0 right-0 w-64 ${
+        open ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+      }`}
       style={{
         background: "var(--zen-surface)",
         borderColor: "var(--zen-border)",
@@ -70,11 +74,21 @@ export function TodoList({ roomId, todos, currentUser, onChange }: TodoListProps
           <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--zen-muted)" }}>
             Session Goals
           </span>
-          {total > 0 && (
-            <span className="text-xs" style={{ color: "var(--zen-muted)" }}>
-              {done}/{total}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {total > 0 && (
+              <span className="text-xs" style={{ color: "var(--zen-muted)" }}>
+                {done}/{total}
+              </span>
+            )}
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1 rounded hover:opacity-70"
+              aria-label="Close goals panel"
+              style={{ color: "var(--zen-muted)" }}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         {total > 0 && (
           <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ background: "var(--zen-border)" }}>
@@ -156,6 +170,6 @@ export function TodoList({ roomId, todos, currentUser, onChange }: TodoListProps
           </button>
         </form>
       </div>
-    </div>
+    </aside>
   );
 }

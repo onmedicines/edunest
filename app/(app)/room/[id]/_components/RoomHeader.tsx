@@ -54,7 +54,7 @@ export function RoomHeader({ room, currentUser, connectionStatus, onlineCount }:
   return (
     <>
       <header
-        className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+        className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 flex-shrink-0"
         style={{
           background: "var(--zen-surface)",
           borderBottom: "1px solid var(--zen-border)",
@@ -71,14 +71,14 @@ export function RoomHeader({ room, currentUser, connectionStatus, onlineCount }:
             {room.name}
           </h1>
           {room.description && (
-            <p className="text-xs truncate" style={{ color: "var(--zen-muted)" }}>
+            <p className="hidden sm:block text-xs truncate" style={{ color: "var(--zen-muted)" }}>
               {room.description}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {statusBadge}
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <div className="hidden sm:block">{statusBadge}</div>
           <span
             className="text-xs flex items-center gap-1"
             style={{ color: "var(--zen-muted)" }}
@@ -111,8 +111,8 @@ export function RoomHeader({ room, currentUser, connectionStatus, onlineCount }:
             <Settings className="w-4 h-4" />
           </Button>
 
-          {/* Logout */}
-          <form action={logout}>
+          {/* Logout — hide on mobile to save space */}
+          <form action={logout} className="hidden sm:block">
             <Button variant="ghost" size="icon-sm" type="submit" title="Sign out">
               <LogOut className="w-4 h-4" />
             </Button>

@@ -91,15 +91,16 @@ export function Notes({ roomId, roomName, content, onChange }: NotesProps) {
       </div>
 
       {/* Editor / Preview */}
-      <div className="flex-1 overflow-hidden flex">
+      <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
         {/* Editor pane */}
         {(mode === "edit" || mode === "split") && (
           <div
-            className="flex flex-col"
-            style={{
-              width: mode === "split" ? "50%" : "100%",
-              borderRight: mode === "split" ? `1px solid var(--zen-border)` : "none",
-            }}
+            className={`flex flex-col ${
+              mode === "split"
+                ? "w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r"
+                : "w-full h-full"
+            }`}
+            style={{ borderColor: "var(--zen-border)" }}
           >
             <textarea
               value={content}
@@ -120,11 +121,10 @@ export function Notes({ roomId, roomName, content, onChange }: NotesProps) {
         {/* Preview pane */}
         {(mode === "preview" || mode === "split") && (
           <div
-            className="overflow-auto p-4 md-preview"
-            style={{
-              width: mode === "split" ? "50%" : "100%",
-              background: "var(--zen-surface)",
-            }}
+            className={`overflow-auto p-4 md-preview ${
+              mode === "split" ? "w-full md:w-1/2 h-1/2 md:h-full" : "w-full h-full"
+            }`}
+            style={{ background: "var(--zen-surface)" }}
           >
             {content ? (
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>

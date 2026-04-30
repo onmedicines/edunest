@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { Users, ListTodo } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { CHANNEL_NAME, EVENTS } from "@/lib/realtime/types";
 import { getRemainingSeconds } from "@/lib/utils";
@@ -65,6 +66,8 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
   const [activeTab, setActiveTab] = useState<Tab>("chat");
+  const [usersDrawerOpen, setUsersDrawerOpen] = useState(false);
+  const [todosDrawerOpen, setTodosDrawerOpen] = useState(false);
 
   // ── Refs ───────────────────────────────────────────────────────────────
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>["channel"]> | null>(null);
@@ -449,7 +452,19 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
       />
 
       {/* Main layout */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Mobile drawer backdrop */}
+        {(usersDrawerOpen || todosDrawerOpen) && (
+          <div
+            className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+            onClick={() => {
+              setUsersDrawerOpen(false);
+              setTodosDrawerOpen(false);
+            }}
+            aria-hidden
+          />
+        )}
+
         {/* Users sidebar */}
         <UsersSidebar
           users={onlineUsers}
@@ -461,36 +476,51 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
           voiceParticipants={voiceParticipants}
           onVoiceConnect={voiceConnect}
           onVoiceDisconnect={voiceDisconnect}
+          open={usersDrawerOpen}
+          onClose={() => setUsersDrawerOpen(false)}
         />
 
         {/* Content area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {/* Tabs */}
           <div
-            className="flex gap-1 px-4 pt-3 pb-0 flex-shrink-0"
+            className="flex items-center gap-1 px-2 sm:px-4 pt-3 pb-0 flex-shrink-0"
             style={{ borderBottom: "1px solid var(--zen-border)" }}
           >
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative -mb-px"
-                style={{
-                  background: activeTab === tab.id ? "var(--zen-surface)" : "transparent",
-                  color: activeTab === tab.id ? "var(--zen-text)" : "var(--zen-muted)",
-                  borderTop: activeTab === tab.id ? "1px solid var(--zen-border)" : "none",
-                  borderLeft: activeTab === tab.id ? "1px solid var(--zen-border)" : "none",
-                  borderRight: activeTab === tab.id ? "1px solid var(--zen-border)" : "none",
-                  borderBottom: activeTab === tab.id ? "1px solid var(--zen-surface)" : "none",
-                }}
-              >
-                <span>{tab.emoji}</span>
-                {tab.label}
-              </button>
-            ))}
+            {/* Users drawer toggle (mobile only) */}
+            <button
+              onClick={() => setUsersDrawerOpen(true)}
+              className="lg:hidden p-2 rounded-md flex-shrink-0 hover:opacity-70"
+              aria-label="Open users panel"
+              title="Online users"
+              style={{ color: "var(--zen-muted)" }}
+            >
+              <Users className="w-4 h-4" />
+            </button>
 
-            {/* Timer — always visible in tab bar */}
-            <div className="ml-auto flex items-center pr-2">
+            <div className="flex gap-1 flex-1 min-w-0 overflow-x-auto">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative -mb-px flex-shrink-0"
+                  style={{
+                    background: activeTab === tab.id ? "var(--zen-surface)" : "transparent",
+                    color: activeTab === tab.id ? "var(--zen-text)" : "var(--zen-muted)",
+                    borderTop: activeTab === tab.id ? "1px solid var(--zen-border)" : "none",
+                    borderLeft: activeTab === tab.id ? "1px solid var(--zen-border)" : "none",
+                    borderRight: activeTab === tab.id ? "1px solid var(--zen-border)" : "none",
+                    borderBottom: activeTab === tab.id ? "1px solid var(--zen-surface)" : "none",
+                  }}
+                >
+                  <span>{tab.emoji}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Timer — always visible */}
+            <div className="flex items-center pl-1 sm:pr-2 flex-shrink-0">
               <Timer
                 roomId={room.id}
                 timerState={timerState}
@@ -498,6 +528,17 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
                 compact
               />
             </div>
+
+            {/* Todos drawer toggle (mobile only) */}
+            <button
+              onClick={() => setTodosDrawerOpen(true)}
+              className="lg:hidden p-2 rounded-md flex-shrink-0 hover:opacity-70"
+              aria-label="Open goals panel"
+              title="Session goals"
+              style={{ color: "var(--zen-muted)" }}
+            >
+              <ListTodo className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Tab content */}
@@ -546,6 +587,8 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
           todos={todos}
           currentUser={currentUser}
           onChange={handleTodosChange}
+          open={todosDrawerOpen}
+          onClose={() => setTodosDrawerOpen(false)}
         />
       </div>
     </div>

@@ -35,6 +35,7 @@ export function Chat({
   const [draft, setDraft] = useState("");
   const [isPending, startTransition] = useTransition();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [pickerId, setPickerId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -137,12 +138,44 @@ export function Chat({
                       ))}
                     </div>
                   )}
+
+                  {/* Mobile reaction trigger + inline picker */}
+                  <button
+                    onClick={() =>
+                      setPickerId(pickerId === msg.id ? null : msg.id)
+                    }
+                    className="md:hidden mt-1 text-xs"
+                    style={{ color: "var(--zen-muted)" }}
+                  >
+                    {pickerId === msg.id ? "Close" : "+ React"}
+                  </button>
+                  {pickerId === msg.id && (
+                    <div className="md:hidden flex flex-wrap gap-1 mt-1">
+                      {REACTIONS.map((emoji) => (
+                        <button
+                          key={emoji}
+                          onClick={() => {
+                            onReact(msg.id, emoji);
+                            setPickerId(null);
+                          }}
+                          className="text-base w-8 h-8 flex items-center justify-center rounded-lg"
+                          style={{
+                            background: "var(--zen-surface-2)",
+                            border: "1px solid var(--zen-border)",
+                          }}
+                          aria-label={`React with ${emoji}`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Reaction picker — shows on hover */}
+                {/* Reaction picker — hover-only, hidden on touch/mobile */}
                 {hoveredId === msg.id && (
                   <div
-                    className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="hidden md:flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                     style={{ flexShrink: 0 }}
                   >
                     {REACTIONS.map((emoji) => (
