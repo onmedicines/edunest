@@ -119,6 +119,23 @@ create policy "todos_insert" on todos for insert to authenticated with check (au
 create policy "todos_update" on todos for update to authenticated using (true);
 create policy "todos_delete" on todos for delete to authenticated using (true);
 
+-- ── Room Members ───────────────────────────────────────────────────────────
+-- Tracks which users have visited each room; drives the "Recent rooms" list
+-- for both creators and joiners.
+create table if not exists room_members (
+  room_id         uuid references rooms(id) on delete cascade,
+  user_id         uuid references auth.users(id) on delete cascade,
+  last_visited_at timestamptz default now(),
+  primary key (room_id, user_id)
+);
+
+alter table room_members enable row level security;
+
+create policy "Users manage own memberships"
+  on room_members for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 -- ── Enable Realtime ────────────────────────────────────────────────────────
 -- In Supabase Dashboard → Database → Replication, enable these tables:
 -- messages, notes, resources, room_state, todos

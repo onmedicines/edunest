@@ -16,12 +16,14 @@ export default async function RoomsPage() {
 
   const username = user.user_metadata?.username ?? "You";
 
-  const { data: rooms } = await supabase
-    .from("rooms")
-    .select("*")
-    .eq("created_by", user.id)
-    .order("created_at", { ascending: false })
+  const { data: memberships } = await supabase
+    .from("room_members")
+    .select("last_visited_at, rooms(*)")
+    .eq("user_id", user.id)
+    .order("last_visited_at", { ascending: false })
     .limit(20);
+
+  const rooms = (memberships ?? []).map(m => m.rooms as unknown as Room).filter(Boolean);
 
   return (
     <div className="min-h-screen relative" style={{ background: "var(--zen-bg)" }}>
@@ -83,8 +85,8 @@ export default async function RoomsPage() {
           </div>
         </div>
 
-        {rooms && rooms.length > 0 && (
-          <RoomsList rooms={rooms as Room[]} />
+        {rooms.length > 0 && (
+          <RoomsList rooms={rooms} userId={user.id} />
         )}
       </main>
     </div>

@@ -22,6 +22,12 @@ export default async function RoomPage({ params }: { params: Promise<{ id: strin
 
   if (!room) notFound();
 
+  // Track membership — fires concurrently with the data fetches below
+  const membershipUpsert = supabase.from("room_members").upsert(
+    { room_id: id, user_id: user.id, last_visited_at: new Date().toISOString() },
+    { onConflict: "room_id,user_id" }
+  );
+
   // Fetch initial data in parallel
   const [
     { data: messagesData },
@@ -50,6 +56,8 @@ export default async function RoomPage({ params }: { params: Promise<{ id: strin
       .eq("room_id", id)
       .order("created_at", { ascending: true }),
   ]);
+
+  await membershipUpsert;
 
   const initialState = {
     messages: (messagesData as Message[]) ?? [],

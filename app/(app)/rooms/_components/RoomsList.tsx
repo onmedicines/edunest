@@ -7,9 +7,10 @@ import type { Room } from "@/types/database";
 
 interface RoomsListProps {
   rooms: Room[];
+  userId: string;
 }
 
-export function RoomsList({ rooms }: RoomsListProps) {
+export function RoomsList({ rooms, userId }: RoomsListProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -61,6 +62,24 @@ export function RoomsList({ rooms }: RoomsListProps) {
                   </p>
                 )}
               </div>
+              <span
+                className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0"
+                style={
+                  room.created_by === userId
+                    ? {
+                        background: "var(--zen-sage-light)",
+                        color: "var(--zen-sage)",
+                        border: "1px solid var(--deck-accent-dim)",
+                      }
+                    : {
+                        background: "var(--zen-surface)",
+                        color: "var(--zen-muted)",
+                        border: "1px solid var(--zen-border)",
+                      }
+                }
+              >
+                {room.created_by === userId ? "Created" : "Joined"}
+              </span>
               <span
                 className="font-mono text-xs font-semibold px-2 py-1 rounded shrink-0"
                 style={{
