@@ -585,7 +585,6 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
           <div className="flex-1 overflow-hidden relative" style={{ background: "var(--zen-surface)" }}>
             {activeTab === "chat" && (
               <Chat
-                roomId={room.id}
                 messages={messages}
                 currentUser={currentUser}
                 typingUsers={typingUsers}
