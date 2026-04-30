@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LogOut, Settings, Sun, Moon, Users } from "lucide-react";
+import { LogOut, Settings, Sun, Moon, Users, BookOpen } from "lucide-react";
 import { logout } from "@/actions/auth";
 import { updateRoom } from "@/actions/rooms";
 import { useTheme } from "@/components/theme-provider";
@@ -60,8 +60,16 @@ export function RoomHeader({ room, currentUser, connectionStatus, onlineCount }:
           borderBottom: "1px solid var(--zen-border)",
         }}
       >
-        <Link href="/rooms" className="text-xl flex-shrink-0" title="Back to rooms">
-          📚
+        <Link
+          href="/rooms"
+          className="flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0 transition-colors hover:opacity-80"
+          style={{
+            background: "var(--zen-sage-light)",
+            border: "1px solid var(--deck-accent-dim)",
+          }}
+          title="Back to rooms"
+        >
+          <BookOpen className="w-5 h-5" style={{ color: "var(--zen-sage)" }} />
         </Link>
         <div className="flex-1 min-w-0">
           <h1
@@ -135,11 +143,11 @@ export function RoomHeader({ room, currentUser, connectionStatus, onlineCount }:
             <Label>Room code</Label>
             <div className="flex gap-2">
               <div
-                className="flex-1 font-mono text-center text-xl font-semibold tracking-widest rounded-lg py-2"
+                className="flex-1 font-mono text-center text-xl font-bold tracking-[0.25em] rounded-lg py-2"
                 style={{
-                  background: "var(--zen-surface-2)",
-                  border: "1px solid var(--zen-border)",
-                  color: "var(--zen-sage-dark)",
+                  background: "var(--zen-sage-light)",
+                  border: "1px solid var(--deck-accent-dim)",
+                  color: "var(--zen-sage)",
                 }}
               >
                 {room.code}

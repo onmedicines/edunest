@@ -1,35 +1,62 @@
 @import "tailwindcss";
 
-/* ── Zen color palette ── */
+/* ──────────────────────────────────────────────────────────────────────────
+   Pitch-deck palette — dark, technical, sage-accented.
+   Variable names kept (--zen-*) so existing components inherit automatically.
+────────────────────────────────────────────────────────────────────────── */
 :root {
-  --zen-sage: #8fbc8f;
-  --zen-sage-light: #b8d9b8;
-  --zen-sage-dark: #6a9e6a;
-  --zen-blue: #a0c4ff;
-  --zen-blue-light: #c8dcff;
-  --zen-blue-dark: #7aaef0;
+  /* Surfaces */
+  --zen-bg:        #0a0d12;
+  --zen-surface:   #111418;
+  --zen-surface-2: #181d24;
+  --zen-border:    #222830;
 
-  --zen-bg: #f1f3f5;
-  --zen-surface: #ffffff;
-  --zen-surface-2: #f8f9fa;
-  --zen-border: #e0e5ea;
-  --zen-text: #2d3a45;
-  --zen-muted: #6c7a89;
-  --zen-error: #e74c3c;
-  --zen-error-light: #fdf0ef;
+  /* Text */
+  --zen-text:  #e4e8e4;
+  --zen-muted: #6b7d72;
+
+  /* Accent (sage) */
+  --zen-sage:       #5c9a70;
+  --zen-sage-dark:  #7ab78a;   /* brighter — used for hover + accent text on dark */
+  --zen-sage-light: #1a2e22;   /* accent-bg — dark green tint */
+  --deck-accent-dim: #3d7a52;
+
+  /* Blue */
+  --zen-blue:       #4a90b8;
+  --zen-blue-dark:  #6aaed3;
+  --zen-blue-light: #101e2e;
+  --deck-blue-dim:  #2a4a6a;
+
+  /* Semantic accents from the deck */
+  --zen-error:       #c0392b;
+  --zen-error-light: #2a1414;
+  --deck-red-dim:    #8b2222;
+  --deck-amber:      #d4890a;
+  --deck-amber-bg:   #2a1e08;
+  --deck-amber-dim:  #5a3a08;
+  --deck-purple:     #8b6bc0;
+  --deck-purple-bg:  #1e1630;
+  --deck-purple-dim: #3a2a60;
 
   --radius: 0.5rem;
 }
 
+/* The deck is dark-only; .dark mirrors :root so the existing theme toggle is a no-op */
 .dark {
-  --zen-bg: #1a1f24;
-  --zen-surface: #242b33;
-  --zen-surface-2: #2d3642;
-  --zen-border: #38424e;
-  --zen-text: #e8edf2;
-  --zen-muted: #8a9bb0;
-  --zen-error: #ff6b6b;
-  --zen-error-light: #2d1f1f;
+  --zen-bg:        #0a0d12;
+  --zen-surface:   #111418;
+  --zen-surface-2: #181d24;
+  --zen-border:    #222830;
+  --zen-text:  #e4e8e4;
+  --zen-muted: #6b7d72;
+  --zen-sage:       #5c9a70;
+  --zen-sage-dark:  #7ab78a;
+  --zen-sage-light: #1a2e22;
+  --zen-blue:       #4a90b8;
+  --zen-blue-dark:  #6aaed3;
+  --zen-blue-light: #101e2e;
+  --zen-error:       #c0392b;
+  --zen-error-light: #2a1414;
 }
 
 @theme inline {
@@ -43,6 +70,7 @@
   --color-zen-muted: var(--zen-muted);
   --color-zen-error: var(--zen-error);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "JetBrains Mono", "SFMono-Regular", monospace;
 }
 
 /* ── Base ── */
@@ -54,9 +82,9 @@
 
 html {
   height: 100%;
+  color-scheme: dark;
 }
 
-/* YouTube iframe fills its container */
 iframe[src*="youtube"],
 iframe[id^="widget"] {
   width: 100% !important;
@@ -75,6 +103,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Subtle film-grain noise — straight from the deck */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
   width: 6px;
@@ -91,22 +131,140 @@ body {
   background: var(--zen-muted);
 }
 
-/* ── Zen card ── */
+/* ──────────────────────────────────────────────────────────────────────────
+   Deck primitives — eyebrow, divider, chip, icon-circle, deck cards.
+────────────────────────────────────────────────────────────────────────── */
+.deck-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--zen-sage);
+}
+.deck-eyebrow.muted { color: var(--zen-muted); }
+.deck-eyebrow.red   { color: var(--zen-error); }
+
+.deck-divider {
+  width: 48px;
+  height: 2px;
+  background: var(--zen-sage);
+  border-radius: 2px;
+}
+
+.deck-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.deck-chip-green  { background: var(--zen-sage-light);  color: var(--zen-sage);   border-color: var(--deck-accent-dim); }
+.deck-chip-blue   { background: var(--zen-blue-light);  color: var(--zen-blue);   border-color: var(--deck-blue-dim); }
+.deck-chip-purple { background: var(--deck-purple-bg);  color: var(--deck-purple); border-color: var(--deck-purple-dim); }
+.deck-chip-amber  { background: var(--deck-amber-bg);   color: var(--deck-amber); border-color: var(--deck-amber-dim); }
+.deck-chip-red    { background: var(--zen-error-light); color: var(--zen-error);  border-color: var(--deck-red-dim); }
+.deck-chip-muted  { background: var(--zen-surface-2);   color: var(--zen-muted);  border-color: var(--zen-border); }
+
+.deck-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.deck-icon-circle.green  { background: var(--zen-sage-light);  color: var(--zen-sage); }
+.deck-icon-circle.blue   { background: var(--zen-blue-light);  color: var(--zen-blue); }
+.deck-icon-circle.amber  { background: var(--deck-amber-bg);   color: var(--deck-amber); }
+.deck-icon-circle.purple { background: var(--deck-purple-bg);  color: var(--deck-purple); }
+.deck-icon-circle.red    { background: var(--zen-error-light); color: var(--zen-error); }
+
+/* ── Cards (deck-tone) ── */
 .zen-card {
   background-color: var(--zen-surface);
   border: 1px solid var(--zen-border);
-  border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: none;
 }
-
 .zen-card-float {
   background-color: var(--zen-surface);
   border: 1px solid var(--zen-border);
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+.deck-card-accent {
+  background: var(--zen-sage-light);
+  border: 1px solid var(--deck-accent-dim);
+  border-radius: 14px;
 }
 
-/* ── Markdown preview ── */
+/* ── Wordmark — deck S1 / closing ── */
+.deck-wordmark {
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.deck-wordmark .accent-letter { color: var(--zen-sage); }
+
+/* Sage radial glow used behind hero / closing */
+.deck-glow {
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(ellipse, rgba(92, 154, 112, 0.18) 0%, transparent 70%);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Motion utilities (kept from previous pass; reduced-motion aware).
+────────────────────────────────────────────────────────────────────────── */
+@keyframes zen-float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes zen-float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%      { transform: translateY(-14px) rotate(2deg); }
+}
+@keyframes zen-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes zen-pulse-glow {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.8; transform: translate(-50%, -50%) scale(1.05); }
+}
+
+.zen-anim-float       { animation: zen-float 6s ease-in-out infinite; }
+.zen-anim-float-slow  { animation: zen-float-slow 9s ease-in-out infinite; }
+.zen-anim-pulse-glow  { animation: zen-pulse-glow 7s ease-in-out infinite; }
+.zen-anim-gradient {
+  background-size: 200% 200%;
+  animation: zen-gradient-shift 14s ease infinite;
+}
+
+.zen-gradient-text {
+  background: linear-gradient(120deg, var(--zen-sage), var(--zen-blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zen-anim-float,
+  .zen-anim-float-slow,
+  .zen-anim-pulse-glow,
+  .zen-anim-gradient {
+    animation: none !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Markdown preview — re-tuned for dark deck background.
+────────────────────────────────────────────────────────────────────────── */
 .md-preview {
   line-height: 1.7;
   color: var(--zen-text);
@@ -114,15 +272,16 @@ body {
 .md-preview h1,
 .md-preview h2,
 .md-preview h3 {
-  font-weight: 600;
+  font-weight: 700;
   margin-top: 1.25em;
   margin-bottom: 0.5em;
   color: var(--zen-text);
+  letter-spacing: -0.01em;
 }
 .md-preview h1 { font-size: 1.5em; }
 .md-preview h2 { font-size: 1.25em; }
 .md-preview h3 { font-size: 1.1em; }
-.md-preview p { margin-bottom: 0.75em; }
+.md-preview p  { margin-bottom: 0.75em; }
 .md-preview ul,
 .md-preview ol {
   padding-left: 1.5em;
@@ -135,7 +294,8 @@ body {
   border-radius: 4px;
   padding: 0.1em 0.35em;
   font-size: 0.875em;
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
+  color: var(--zen-sage-dark);
 }
 .md-preview pre {
   background: var(--zen-surface-2);
@@ -149,6 +309,7 @@ body {
   background: none;
   border: none;
   padding: 0;
+  color: var(--zen-text);
 }
 .md-preview blockquote {
   border-left: 3px solid var(--zen-sage);

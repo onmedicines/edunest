@@ -1,7 +1,18 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ExternalLink, Trash2, Plus } from "lucide-react";
+import {
+  ExternalLink,
+  Trash2,
+  Plus,
+  Link2,
+  CirclePlay,
+  FileText,
+  Code2,
+  FileType,
+  NotebookPen,
+  type LucideIcon,
+} from "lucide-react";
 import { addResource, removeResource } from "@/actions/resources";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,13 +21,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { extractDomain } from "@/lib/utils";
 import type { Resource, ResourceType } from "@/types/database";
 
-const TYPE_ICONS: Record<ResourceType, string> = {
-  youtube: "▶️",
-  "google-docs": "📄",
-  github: "🐙",
-  pdf: "📑",
-  notion: "📓",
-  link: "🔗",
+const TYPE_ICONS: Record<ResourceType, LucideIcon> = {
+  youtube: CirclePlay,
+  "google-docs": FileText,
+  github: Code2,
+  pdf: FileType,
+  notion: NotebookPen,
+  link: Link2,
 };
 
 interface ResourceLibraryProps {
@@ -102,15 +113,23 @@ export function ResourceLibrary({
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
           {resources.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-3xl mb-2">🔗</p>
+            <div className="text-center py-12 flex flex-col items-center">
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                style={{ background: "var(--zen-sage-light)" }}
+              >
+                <Link2
+                  className="w-6 h-6"
+                  style={{ color: "var(--zen-sage-dark)" }}
+                />
+              </div>
               <p className="text-sm" style={{ color: "var(--zen-muted)" }}>
                 No resources yet. Add a link above.
               </p>
             </div>
           )}
           {resources.map((resource) => {
-            const icon = TYPE_ICONS[resource.resource_type] ?? "🔗";
+            const Icon = TYPE_ICONS[resource.resource_type] ?? Link2;
             const domain = extractDomain(resource.url);
             const isSelected = previewUrl === resource.url;
 
@@ -124,7 +143,12 @@ export function ResourceLibrary({
                 }}
               >
                 <div className="flex items-start gap-2">
-                  <span className="text-lg flex-shrink-0">{icon}</span>
+                  <span
+                    className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ background: "var(--zen-surface)", border: "1px solid var(--zen-border)" }}
+                  >
+                    <Icon className="w-4 h-4" style={{ color: "var(--zen-sage-dark)" }} />
+                  </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: "var(--zen-text)" }}>
                       {resource.title}

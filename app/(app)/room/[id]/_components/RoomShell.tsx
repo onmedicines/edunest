@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Users, ListTodo } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Users,
+  ListTodo,
+  MessageCircle,
+  FileText,
+  Play,
+  Link2,
+  type LucideIcon,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { CHANNEL_NAME, EVENTS } from "@/lib/realtime/types";
 import { getRemainingSeconds } from "@/lib/utils";
@@ -456,11 +465,11 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
   const isHandRaised = presenceMap[currentUser.id]?.isHandRaised ?? false;
   const onlineUsers = Object.values(presenceMap);
 
-  const tabs: { id: Tab; label: string; emoji: string }[] = [
-    { id: "chat", label: "Chat", emoji: "💬" },
-    { id: "notes", label: "Notes", emoji: "📝" },
-    { id: "video", label: "Watch", emoji: "▶️" },
-    { id: "resources", label: "Resources", emoji: "🔗" },
+  const tabs: { id: Tab; label: string; Icon: LucideIcon }[] = [
+    { id: "chat", label: "Chat", Icon: MessageCircle },
+    { id: "notes", label: "Notes", Icon: FileText },
+    { id: "video", label: "Watch", Icon: Play },
+    { id: "resources", label: "Resources", Icon: Link2 },
   ];
 
   return (
@@ -521,24 +530,30 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
             </button>
 
             <div className="flex gap-1 flex-1 min-w-0 overflow-x-auto">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative -mb-px flex-shrink-0"
-                  style={{
-                    background: activeTab === tab.id ? "var(--zen-surface)" : "transparent",
-                    color: activeTab === tab.id ? "var(--zen-text)" : "var(--zen-muted)",
-                    borderTop: activeTab === tab.id ? "1px solid var(--zen-border)" : "none",
-                    borderLeft: activeTab === tab.id ? "1px solid var(--zen-border)" : "none",
-                    borderRight: activeTab === tab.id ? "1px solid var(--zen-border)" : "none",
-                    borderBottom: activeTab === tab.id ? "1px solid var(--zen-surface)" : "none",
-                  }}
-                >
-                  <span>{tab.emoji}</span>
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              ))}
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className="relative flex items-center gap-1.5 px-3 sm:px-4 py-2 text-sm font-medium transition-colors flex-shrink-0"
+                    style={{
+                      color: isActive ? "var(--zen-text)" : "var(--zen-muted)",
+                    }}
+                  >
+                    <tab.Icon className="w-4 h-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    {isActive && (
+                      <motion.span
+                        layoutId="room-tab-underline"
+                        className="absolute left-2 right-2 -bottom-px h-[2px] rounded-full"
+                        style={{ background: "var(--zen-sage-dark)" }}
+                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Timer — always visible */}

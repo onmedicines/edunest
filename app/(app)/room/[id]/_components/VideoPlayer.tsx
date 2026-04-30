@@ -235,8 +235,13 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
             className="w-full h-full"
           />
         ) : (
-          <div className="text-center p-8">
-            <p className="text-4xl mb-3">▶️</p>
+          <div className="text-center p-8 flex flex-col items-center">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
+              <PlayCircle className="w-8 h-8" style={{ color: "#aaa" }} strokeWidth={1.5} />
+            </div>
             <p className="text-sm" style={{ color: "#aaa" }}>
               Paste a YouTube URL above to watch together
             </p>

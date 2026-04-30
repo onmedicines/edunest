@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EduNest — Built for Group Study</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<style>
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0a0d12;
+  --surface:    #111418;
+  --surface2:   #181d24;
+  --border:     #222830;
+  --accent:     #5c9a70;
+  --accent-dim: #3d7a52;
+  --accent-bg:  #1a2e22;
+  --text:       #e4e8e4;
+  --muted:      #6b7d72;
+  --red:        #c0392b;
+  --red-bg:     #2a1414;
+  --red-dim:    #8b2222;
+  --amber:      #d4890a;
+  --amber-bg:   #2a1e08;
+  --blue:       #4a90b8;
+  --blue-bg:    #101e2e;
+  --purple:     #8b6bc0;
+  --purple-bg:  #1e1630;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Slide System ─────────────────────────────────────────────────────────── */
+#deck {
+  width: 100vw; height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 80px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.slide.active {
+  opacity: 1;
+  pointer-events: all;
+  z-index: 2;
+}
+
+/* ── UI Chrome ────────────────────────────────────────────────────────────── */
+#counter {
+  position: fixed;
+  top: 28px; right: 36px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  z-index: 100;
+}
+
+#dots {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 100;
+}
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: background 0.25s, transform 0.25s;
+}
+.dot.active {
+  background: var(--accent);
+  transform: scale(1.4);
+}
+
+#nav-hint {
+  position: fixed;
+  bottom: 28px; right: 36px;
+  font-size: 11px;
+  color: var(--muted);
+  z-index: 100;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#go-start {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-family: inherit;
+  letter-spacing: 0.03em;
+}
+#go-start:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* ── Typography ───────────────────────────────────────────────────────────── */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.eyebrow.red { color: var(--red); }
+.eyebrow.muted { color: var(--muted); }
+
+h1 {
+  font-size: clamp(48px, 7vw, 88px);
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+}
+h2 {
+  font-size: clamp(32px, 4.5vw, 56px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+h3 {
+  font-size: clamp(18px, 2.5vw, 26px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.body-lg {
+  font-size: clamp(15px, 1.6vw, 18px);
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 640px;
+}
+.body-sm {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.accent { color: var(--accent); }
+.red { color: var(--red); }
+.muted { color: var(--muted); }
+
+/* ── Layout Helpers ───────────────────────────────────────────────────────── */
+.center { text-align: center; }
+.col { display: flex; flex-direction: column; }
+.row { display: flex; flex-direction: row; align-items: center; }
+.gap-4  { gap: 4px; }
+.gap-8  { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.gap-24 { gap: 24px; }
+.gap-32 { gap: 32px; }
+.gap-48 { gap: 48px; }
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 32px;
+}
+.card-sm {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 22px;
+}
+.card-accent {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-dim);
+  border-radius: 16px;
+  padding: 28px 32px;
+}
+.card-red {
+  background: var(--red-bg);
+  border: 1px solid var(--red-dim);
+  border-radius: 12px;
+  padding: 18px 22px;
+}
+
+/* ── Tags & Chips ─────────────────────────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.chip-green { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-dim); }
+.chip-red   { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-dim); }
+.chip-muted { background: var(--surface2);  color: var(--muted);  border: 1px solid var(--border); }
+.chip-blue  { background: var(--blue-bg);   color: var(--blue);   border: 1px solid #2a4a6a; }
+.chip-purple { background: var(--purple-bg); color: var(--purple); border: 1px solid #3a2a60; }
+.chip-amber { background: var(--amber-bg);  color: var(--amber);  border: 1px solid #5a3a08; }
+
+/* ── Icon circles ─────────────────────────────────────────────────────────── */
+.icon-circle {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.icon-circle.green { background: var(--accent-bg); }
+.icon-circle.red   { background: var(--red-bg); }
+.icon-circle.amber { background: var(--amber-bg); }
+.icon-circle.blue  { background: var(--blue-bg); }
+
+/* ── Divider ──────────────────────────────────────────────────────────────── */
+.divider {
+  width: 48px; height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin: 20px 0;
+}
+.divider.center { margin-left: auto; margin-right: auto; }
+
+/* ── Progress bar ─────────────────────────────────────────────────────────── */
+.bar-wrap {
+  width: 100%;
+  background: var(--surface2);
+  border-radius: 999px;
+  height: 18px;
+  overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  width: 0%;
+  position: absolute;
+  left: 0; top: 0;
+}
+.bar-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ── Code block ───────────────────────────────────────────────────────────── */
+.code-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #9ab;
+  white-space: pre;
+}
+.code-block .kw  { color: #c792ea; }
+.code-block .fn  { color: #82aaff; }
+.code-block .str { color: #c3e88d; }
+.code-block .cm  { color: #546070; }
+
+/* ── Flow diagram ─────────────────────────────────────────────────────────── */
+.flow-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: center;
+}
+.flow-box.green { background: var(--accent-bg); border-color: var(--accent-dim); color: var(--accent); }
+.flow-box.blue  { background: var(--blue-bg);   border-color: #2a4a6a; color: var(--blue); }
+.flow-box.purple { background: var(--purple-bg); border-color: #3a2a60; color: var(--purple); }
+.flow-arrow {
+  color: var(--muted);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* ── Slide-specific styles ────────────────────────────────────────────────── */
+
+/* S1 — Hero */
+#s1 { background: var(--bg); }
+#s1 .wordmark {
+  font-size: clamp(64px, 10vw, 110px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+#s1 .wordmark .letter { display: inline-block; }
+#s1 .wordmark .accent-letter { color: var(--accent); }
+#s1 .tagline {
+  font-size: clamp(16px, 2vw, 22px);
+  color: var(--muted);
+  font-weight: 400;
+  margin-top: 20px;
+  letter-spacing: 0.01em;
+}
+#s1 .sub-chips { display: flex; gap: 10px; margin-top: 32px; }
+#s1 .glow {
+  position: absolute;
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(92,154,112,0.12) 0%, transparent 70%);
+  pointer-events: none;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* S2 — Status quo */
+#s2 .discord-card {
+  background: #23272a;
+  border: 1px solid #36393f;
+  border-radius: 14px;
+  padding: 20px 24px;
+  min-width: 280px;
+}
+#s2 .discord-channel {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 8px; border-radius: 6px;
+  font-size: 13px; font-weight: 500; color: #8e9297;
+}
+#s2 .discord-channel.active { background: #40444b; color: #fff; }
+#s2 .discord-dot { width: 8px; height: 8px; border-radius: 50%; background: #43b581; }
+#s2 .discord-msg {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 0; border-bottom: 1px solid #36393f;
+}
+#s2 .discord-avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; }
+#s2 .discord-text { font-size: 12px; color: #dcddde; line-height: 1.5; }
+#s2 .discord-name { font-weight: 600; font-size: 12px; color: #fff; }
+
+/* S3 — Bandwidth */
+#s3 .bw-section { width: 100%; max-width: 640px; }
+
+/* S6 — Solution reveal */
+#s6 .big-check {
+  font-size: 80px;
+  margin-bottom: 16px;
+}
+
+/* S7, S8 — Feature slides */
+.feature-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* S9 — More features grid */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+}
+
+/* S10 — Architecture */
+.arch-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 860px;
+}
+
+/* S11 — Tech stack */
+.stack-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  width: 100%;
+  max-width: 900px;
+}
+.stack-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stack-icon { font-size: 24px; }
+.stack-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.stack-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* S12 — Closing */
+#s12 .final-glow {
+  position: absolute;
+  width: 800px; height: 400px;
+  background: radial-gradient(ellipse, rgba(92,154,112,0.15) 0%, transparent 70%);
+  pointer-events: none;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+#s12 .cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  cursor: default;
+  margin-top: 32px;
+  letter-spacing: 0.01em;
+}
+
+/* ── Noise texture overlay ────────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.4;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Chrome ──────────────────────────────────────────────────────────────── -->
+<div id="counter">1 / 12</div>
+<div id="dots"></div>
+<div id="nav-hint">
+  <button id="go-start" onclick="goTo(0)" title="Go to start">⏮ Start</button>
+  <span>← → to navigate</span>
+</div>
+
+<!-- ── Deck ───────────────────────────────────────────────────────────────── -->
+<div id="deck">
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 1 — HERO
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide center" id="s1">
+  <div class="glow"></div>
+  <div class="col" style="align-items:center; gap:0;">
+    <div class="eyebrow muted" id="s1-eyebrow">Introducing</div>
+    <div class="wordmark" id="s1-wordmark">
+      <span class="letter">E</span><span class="letter">d</span><span class="letter">u</span><span class="letter accent-letter">N</span><span class="letter accent-letter">e</span><span class="letter accent-letter">s</span><span class="letter accent-letter">t</span>
+    </div>
+    <p class="tagline" id="s1-tagline">A collaborative study room — built for focus, not chaos.</p>
+    <div class="sub-chips" id="s1-chips">
+      <span class="chip chip-green">📚 Study-first</span>
+      <span class="chip chip-blue">⚡ Real-time</span>
+      <span class="chip chip-purple">🔒 Distraction-free</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 2 — STATUS QUO
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s2">
+  <div class="row gap-48" style="width:100%; max-width:960px; align-items:flex-start;">
+    <div class="col gap-16" style="flex:1;">
+      <div class="eyebrow muted" id="s2-ey">The Reality</div>
+      <h2 id="s2-h">Students use Discord<br/>to study together.</h2>
+      <div class="divider" id="s2-div"></div>
+      <p class="body-lg" id="s2-body">
+        It works — just barely. Discord was built for gaming communities. It has voice channels, text chat, and file sharing. So students adapted it for group study.
+      </p>
+      <p class="body-lg" id="s2-body2" style="margin-top:0;">
+        But workarounds have a cost. And that cost shows up every study session.
+      </p>
+    </div>
+    <div class="discord-card" id="s2-card">
+      <div style="font-size:11px; font-weight:700; color:#8e9297; margin-bottom:12px; letter-spacing:0.1em;">STUDY SERVER</div>
+      <div class="discord-channel">📢 announcements</div>
+      <div class="discord-channel active">📖 study-session</div>
+      <div class="discord-channel">🎮 gaming</div>
+      <div class="discord-channel">💬 off-topic</div>
+      <div class="discord-channel">🎵 music-bot</div>
+      <div style="margin-top:16px; border-top:1px solid #36393f; padding-top:16px;">
+        <div class="discord-msg">
+          <div class="discord-avatar" style="background:#7289da;"></div>
+          <div>
+            <div class="discord-name">alex_studies</div>
+            <div class="discord-text">can someone share their screen so we can watch the lecture?</div>
+          </div>
+        </div>
+        <div class="discord-msg" style="border-bottom:none;">
+          <div class="discord-avatar" style="background:#43b581;"></div>
+          <div>
+            <div class="discord-name">priya_dev</div>
+            <div class="discord-text">sure one sec, also where did we put the notes doc again</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 3 — PROBLEM: BANDWIDTH / VIDEO
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s3">
+  <div class="col gap-24" style="width:100%; max-width:760px;">
+    <div>
+      <div class="eyebrow red" id="s3-ey">Problem 01</div>
+      <h2 id="s3-h">Watching a video together<br/>means someone shares their screen.</h2>
+    </div>
+    <p class="body-lg" id="s3-body">Screen sharing encodes your entire display and streams it — compressed video of compressed video, for every watcher. It's inefficient by design.</p>
+
+    <div class="bw-section col gap-16" id="s3-bars">
+      <div>
+        <div class="bar-label">
+          <span>🎮 Discord — Screen Share</span>
+          <span class="red">~3–5 Mbps upload per viewer</span>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-fill" id="bar-discord" style="background: var(--red);"></div>
+        </div>
+      </div>
+      <div>
+        <div class="bar-label">
+          <span>📚 EduNest — Synced Player</span>
+          <span class="accent">~0 Mbps extra (YouTube handles it)</span>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-fill" id="bar-edunest" style="background: var(--accent);"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-sm" id="s3-note" style="border-color: var(--accent-dim); background: var(--accent-bg);">
+      <p class="body-sm" style="color: var(--accent);">
+        <strong>EduNest's approach:</strong> Everyone loads the same YouTube video independently. Play, pause, and seek are broadcast as tiny events (~100 bytes) over WebSocket. Each client's YouTube player responds in real time.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 4 — PROBLEM: NOTES
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s4">
+  <div class="row gap-48" style="width:100%; max-width:960px; align-items:flex-start;">
+    <div class="col gap-20" style="flex:1;">
+      <div>
+        <div class="eyebrow red" id="s4-ey">Problem 02</div>
+        <h2 id="s4-h">Note-taking is a<br/>multi-app disaster.</h2>
+      </div>
+      <div class="divider" id="s4-div"></div>
+      <p class="body-lg" id="s4-body">There's no designated place for shared notes. So students improvise — badly.</p>
+    </div>
+
+    <div class="col gap-12" style="flex:1;" id="s4-cards">
+      <div class="card-red row gap-16">
+        <div class="icon-circle red">💬</div>
+        <div>
+          <div style="font-size:13px; font-weight:700; color: var(--red); margin-bottom:4px;">Use the Discord chat box</div>
+          <div class="body-sm">No formatting. Notes drown in off-topic messages. Impossible to find later.</div>
+        </div>
+      </div>
+      <div class="card-red row gap-16">
+        <div class="icon-circle red">📄</div>
+        <div>
+          <div style="font-size:13px; font-weight:700; color: var(--red); margin-bottom:4px;">Share a Google Doc link</div>
+          <div class="body-sm">Change permissions to "anyone with link". Paste the URL. Switch apps. Switch back. Repeat every session.</div>
+        </div>
+      </div>
+      <div class="card-red row gap-16">
+        <div class="icon-circle red">🗂️</div>
+        <div>
+          <div style="font-size:13px; font-weight:700; color: var(--red); margin-bottom:4px;">Use an external app entirely</div>
+          <div class="body-sm">Notion, Obsidian, Roam — completely out of context. No one stays in sync.</div>
+        </div>
+      </div>
+      <div class="card-accent row gap-16" style="margin-top:4px;">
+        <div class="icon-circle green">📝</div>
+        <div>
+          <div style="font-size:13px; font-weight:700; color: var(--accent); margin-bottom:4px;">EduNest: built-in Markdown editor</div>
+          <div class="body-sm" style="color: var(--accent);">Real-time. Visible to everyone. Download as .md when done.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 5 — PROBLEM: DISTRACTION
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide center" id="s5">
+  <div class="col gap-24" style="align-items:center; max-width:760px;">
+    <div>
+      <div class="eyebrow red" id="s5-ey">Problem 03</div>
+      <h2 id="s5-h">Discord is engineered<br/>for engagement — not focus.</h2>
+    </div>
+    <div class="divider center" id="s5-div"></div>
+
+    <div class="row gap-16" id="s5-chips" style="flex-wrap:wrap; justify-content:center;">
+      <span class="chip chip-red">🎮 Gaming channels</span>
+      <span class="chip chip-red">💬 Off-topic chats</span>
+      <span class="chip chip-red">🔔 Unread notifications</span>
+      <span class="chip chip-red">🎵 Music bots</span>
+      <span class="chip chip-red">😂 Meme channels</span>
+      <span class="chip chip-red">📢 Server announcements</span>
+    </div>
+
+    <p class="body-lg" id="s5-body" style="text-align:center;">
+      Every ping, every unread badge, every "hey look at this" in another channel pulls focus away. Discord's context is <em>everything</em> — which means studying is just one thing in a noisy crowd.
+    </p>
+
+    <div class="card-accent" id="s5-card" style="width:100%; text-align:left;">
+      <div class="row gap-12">
+        <div class="icon-circle green" style="font-size:18px;">🧘</div>
+        <div>
+          <div style="font-size:13px; font-weight:700; color: var(--accent); margin-bottom:4px;">EduNest is a single-purpose room</div>
+          <div class="body-sm" style="color: var(--accent);">No servers. No gaming channels. No bots. When you're in a study room, that's all there is.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 6 — SOLUTION REVEAL
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide center" id="s6">
+  <div class="glow"></div>
+  <div class="col gap-16" style="align-items:center; max-width:700px;">
+    <div class="big-check" id="s6-check">📚</div>
+    <div class="eyebrow" id="s6-ey">The Solution</div>
+    <h1 id="s6-h" style="font-size: clamp(40px, 6vw, 72px);">EduNest</h1>
+    <h3 id="s6-sub" style="color: var(--muted); font-weight:400; font-size:clamp(16px, 2vw, 22px);">A collaborative study room built from scratch<br/>for exactly one thing.</h3>
+    <div class="divider center" id="s6-div"></div>
+    <div class="row gap-12" id="s6-features" style="flex-wrap:wrap; justify-content:center;">
+      <span class="chip chip-green">▶️ Synced Video</span>
+      <span class="chip chip-blue">📝 Shared Notes</span>
+      <span class="chip chip-purple">🎙 Voice Chat</span>
+      <span class="chip chip-amber">⏱ Study Timer</span>
+      <span class="chip chip-green">💬 Room Chat</span>
+      <span class="chip chip-muted">✅ Session Goals</span>
+      <span class="chip chip-muted">🔗 Resource Library</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 7 — FEATURE: SYNCED VIDEO
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s7">
+  <div class="col gap-20" style="width:100%; max-width:960px;">
+    <div>
+      <div class="eyebrow" id="s7-ey">Feature 01</div>
+      <h2 id="s7-h">Synced Video Player</h2>
+      <p class="body-lg" id="s7-sub" style="margin-top:12px;">Anyone can play, pause, or seek — everyone follows in real time.</p>
+    </div>
+    <div class="feature-split" id="s7-split">
+      <div class="card col gap-16">
+        <div class="row gap-8">
+          <span class="chip chip-muted">How it works</span>
+        </div>
+        <div class="col gap-10">
+          <div class="row gap-10">
+            <span style="color:var(--accent); font-weight:700; font-size:13px; min-width:20px;">1</span>
+            <span class="body-sm">User pastes a YouTube URL → YouTube IFrame API loads the video locally in each browser</span>
+          </div>
+          <div class="row gap-10">
+            <span style="color:var(--accent); font-weight:700; font-size:13px; min-width:20px;">2</span>
+            <span class="body-sm">Play / pause / seek → <code class="mono" style="color:var(--blue);">onStateChange</code> fires → broadcasts <code class="mono" style="color:var(--accent);">video:state</code> event over Supabase Realtime</span>
+          </div>
+          <div class="row gap-10">
+            <span style="color:var(--accent); font-weight:700; font-size:13px; min-width:20px;">3</span>
+            <span class="body-sm">All peers receive <code class="mono" style="color:var(--accent);">{ videoId, isPlaying, currentTime, triggeredBy }</code> → call <code class="mono" style="color:var(--blue);">seekTo()</code> + play/pause</span>
+          </div>
+          <div class="row gap-10">
+            <span style="color:var(--accent); font-weight:700; font-size:13px; min-width:20px;">4</span>
+            <span class="body-sm"><code class="mono" style="color:var(--purple);">ignoreEventsRef</code> suppresses own player events for 500ms after a remote update — prevents feedback loops</span>
+          </div>
+        </div>
+      </div>
+      <div class="col gap-12">
+        <div class="code-block" style="flex:1;">
+<span class="cm">// Broadcast play/pause to room</span>
+<span class="kw">const</span> <span class="fn">handleVideoChange</span> = (newState) => {
+  setVideoState(prev => ({...prev, ...newState}));
+  channel.<span class="fn">send</span>({
+    type: <span class="str">"broadcast"</span>,
+    event: <span class="str">"video:state"</span>,
+    payload: {
+      ...newState,
+      triggeredBy: currentUser.id
+    }
+  });
+};
+
+<span class="cm">// Receive and apply from peers</span>
+channel.<span class="fn">on</span>(<span class="str">"broadcast"</span>, { event: <span class="str">"video:state"</span> },
+  ({ payload }) => {
+    <span class="kw">if</span> (payload.triggeredBy === currentUser.id) <span class="kw">return</span>;
+    setVideoState(payload);
+  }
+);</div>
+        <div class="card-sm row gap-12" style="background: var(--accent-bg); border-color: var(--accent-dim);">
+          <span style="font-size:20px;">⚡</span>
+          <span class="body-sm" style="color:var(--accent);">Zero bandwidth overhead. YouTube CDN delivers the video to each client independently.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 8 — FEATURE: NOTES
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s8">
+  <div class="col gap-20" style="width:100%; max-width:960px;">
+    <div>
+      <div class="eyebrow" id="s8-ey">Feature 02</div>
+      <h2 id="s8-h">Real-time Collaborative Notes</h2>
+      <p class="body-lg" id="s8-sub" style="margin-top:12px;">Markdown editor. Everyone sees edits live. Download when the session ends.</p>
+    </div>
+    <div class="feature-split" id="s8-split">
+      <div class="card col gap-14">
+        <div class="row gap-8 gap-8" style="flex-wrap:wrap;">
+          <span class="chip chip-green">Edit mode</span>
+          <span class="chip chip-muted">Split mode</span>
+          <span class="chip chip-blue">Preview mode</span>
+        </div>
+        <div class="col gap-10">
+          <div class="row gap-10">
+            <span style="color:var(--accent); font-weight:700; font-size:13px; min-width:20px;">1</span>
+            <span class="body-sm">Any keystroke → <code class="mono" style="color:var(--accent);">broadcast(NOTES_UPDATE, { content, updatedBy })</code> fires immediately</span>
+          </div>
+          <div class="row gap-10">
+            <span style="color:var(--accent); font-weight:700; font-size:13px; min-width:20px;">2</span>
+            <span class="body-sm">Peers check <code class="mono" style="color:var(--purple);">updatedBy !== currentUser.id</code> before applying — prevents overwriting your own typing</span>
+          </div>
+          <div class="row gap-10">
+            <span style="color:var(--accent); font-weight:700; font-size:13px; min-width:20px;">3</span>
+            <span class="body-sm">500ms debounce → <code class="mono" style="color:var(--blue);">saveNotes()</code> Server Action → persists to Supabase DB</span>
+          </div>
+          <div class="row gap-10">
+            <span style="color:var(--accent); font-weight:700; font-size:13px; min-width:20px;">4</span>
+            <span class="body-sm">Download button: client-side <code class="mono" style="color:var(--purple);">Blob</code> → <code class="mono" style="color:var(--blue);">URL.createObjectURL()</code> → <code class="mono" style="color:var(--accent);">.md</code> file</span>
+          </div>
+        </div>
+        <div class="card-sm" style="background: var(--accent-bg); border-color: var(--accent-dim); margin-top:4px;">
+          <div class="row gap-8">
+            <span>📥</span>
+            <span class="body-sm" style="color:var(--accent);">File named <code class="mono">{room-slug}-2026-04-09.md</code> — ready to keep after the session.</span>
+          </div>
+        </div>
+      </div>
+      <div class="card col gap-12" style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+        <div style="display:flex; gap:6px; margin-bottom:4px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#c0392b;"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#d4890a;"></div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#5c9a70;"></div>
+        </div>
+        <div style="color:#c792ea;"># Chapter 5: Neural Networks</div>
+        <div style="color:var(--muted); margin-top:6px;">## Key concepts</div>
+        <div style="color:#9ab; margin-top:4px;">- Backpropagation adjusts weights</div>
+        <div style="color:#9ab;">- <span style="color:var(--amber);">**Gradient descent**</span> minimises loss</div>
+        <div style="color:#9ab;">- Learning rate controls step size</div>
+        <div style="color:var(--muted); margin-top:8px;">## Questions to review</div>
+        <div style="color:#9ab; margin-top:4px;">- [ ] Why does vanishing gradient occur?</div>
+        <div style="color:#9ab;">- [ ] ReLU vs Sigmoid activation</div>
+        <div style="color:#9ab;">- [x] <span style="color:var(--muted); text-decoration:line-through;">Define epoch and batch size</span></div>
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); color:var(--muted); font-size:11px;">
+          <span style="color:var(--accent);">●</span> priya_dev is editing…
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 9 — MORE FEATURES
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide center" id="s9">
+  <div class="col gap-24" style="align-items:center; width:100%; max-width:960px;">
+    <div>
+      <div class="eyebrow" id="s9-ey">And More</div>
+      <h2 id="s9-h">Everything a study session needs.</h2>
+    </div>
+    <div class="features-grid" id="s9-grid">
+      <div class="card col gap-12">
+        <div style="font-size:28px;">💬</div>
+        <div>
+          <h3 style="font-size:15px; margin-bottom:6px;">Room Chat</h3>
+          <p class="body-sm">Persistent messages with emoji reactions (👍🔥💡❤️😂🎉). Typing indicators via Supabase Presence. 2000 char limit.</p>
+        </div>
+      </div>
+      <div class="card col gap-12">
+        <div style="font-size:28px;">🎙</div>
+        <div>
+          <h3 style="font-size:15px; margin-bottom:6px;">Voice — Push to Talk</h3>
+          <p class="body-sm">WebRTC P2P mesh. Hold <kbd style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 5px;">Space</kbd> to speak. Supabase Broadcast acts as the WebRTC signaling channel. Google STUN for NAT traversal.</p>
+        </div>
+      </div>
+      <div class="card col gap-12">
+        <div style="font-size:28px;">⏱</div>
+        <div>
+          <h3 style="font-size:15px; margin-bottom:6px;">Shared Timer</h3>
+          <p class="body-sm">Pomodoro-style countdown. Start/pause/reset syncs to all users. State persists across refreshes. Chime via Web Audio API at zero.</p>
+        </div>
+      </div>
+      <div class="card col gap-12">
+        <div style="font-size:28px;">✅</div>
+        <div>
+          <h3 style="font-size:15px; margin-bottom:6px;">Session Goals</h3>
+          <p class="body-sm">Shared todo list with progress bar. Add, check off, or remove goals. Changes broadcast to all users instantly.</p>
+        </div>
+      </div>
+      <div class="card col gap-12">
+        <div style="font-size:28px;">🔗</div>
+        <div>
+          <h3 style="font-size:15px; margin-bottom:6px;">Resource Library</h3>
+          <p class="body-sm">Paste links to YouTube, GitHub, Google Docs, PDFs, Notion. Auto-detected type icons. Inline iframe preview.</p>
+        </div>
+      </div>
+      <div class="card col gap-12">
+        <div style="font-size:28px;">✋</div>
+        <div>
+          <h3 style="font-size:15px; margin-bottom:6px;">Hand Raise + Presence</h3>
+          <p class="body-sm">See who's online in real time. Raise hand to signal a question. Guest login — no account required.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 10 — ARCHITECTURE
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s10">
+  <div class="col gap-24" style="width:100%; max-width:900px;">
+    <div>
+      <div class="eyebrow" id="s10-ey">Technical Architecture</div>
+      <h2 id="s10-h">How it all works.</h2>
+    </div>
+
+    <div class="col gap-16" id="s10-diagram">
+      <!-- Row 1: Real-time broadcast -->
+      <div class="card-sm col gap-10">
+        <div class="row gap-8" style="margin-bottom:4px;">
+          <span class="chip chip-blue" style="font-size:11px;">Supabase Realtime — one channel per room: <code>room:{id}</code></span>
+        </div>
+        <div class="row gap-8" style="flex-wrap:wrap;">
+          <div class="flow-box">Browser A</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box blue" style="flex:1; min-width:160px;">Broadcast Events<br/><span style="font-size:10px; opacity:0.8;">chat:new · notes:update · video:state · timer:state · resource:add · todo:update · hand:toggle</span></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box">All Browsers</div>
+        </div>
+        <div class="row gap-8" style="margin-top:4px;">
+          <div class="flow-box" style="min-width:100px;">Browser A</div>
+          <div class="flow-arrow">⇄</div>
+          <div class="flow-box green" style="flex:1;">Presence — who's online, typing, hand raised</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Persistence -->
+      <div class="card-sm col gap-10">
+        <div class="row gap-8" style="margin-bottom:4px;">
+          <span class="chip chip-purple" style="font-size:11px;">Persistence — Next.js Server Actions → Supabase Postgres</span>
+        </div>
+        <div class="row gap-8" style="flex-wrap:wrap;">
+          <div class="flow-box">Browser</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box purple" style="flex:1;">Server Action (saveMessage · saveNotes · addTodo · addResource · updateRoomState)</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box green">Postgres DB</div>
+        </div>
+      </div>
+
+      <!-- Row 3: WebRTC voice -->
+      <div class="card-sm col gap-10">
+        <div class="row gap-8" style="margin-bottom:4px;">
+          <span class="chip chip-amber" style="font-size:11px;">Voice — WebRTC P2P (signaling via Supabase Broadcast)</span>
+        </div>
+        <div class="row gap-8" style="flex-wrap:wrap;">
+          <div class="flow-box">Browser A</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box" style="background:var(--amber-bg); border-color:#5a3a08; color:var(--amber); flex:1;">offer / answer / ICE candidates via voice:* broadcast events</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box">Browser B</div>
+        </div>
+        <div style="text-align:center; font-size:12px; color:var(--muted); padding-top:4px;">
+          ↕ Direct P2P audio stream (STUN: stun.l.google.com) — Supabase only used for handshake
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 11 — TECH STACK
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide" id="s11">
+  <div class="col gap-24" style="width:100%; max-width:960px;">
+    <div>
+      <div class="eyebrow" id="s11-ey">Tech Stack</div>
+      <h2 id="s11-h">Modern, minimal, production-ready.</h2>
+    </div>
+    <div class="stack-grid" id="s11-grid">
+      <div class="stack-card">
+        <div class="stack-icon">⚛️</div>
+        <div class="stack-name">Next.js 16</div>
+        <div class="stack-desc">App Router · React 19 · Server Actions · Server Components</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🟩</div>
+        <div class="stack-name">Supabase</div>
+        <div class="stack-desc">Auth · Postgres DB · Realtime Broadcast · Presence · @supabase/ssr</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">📡</div>
+        <div class="stack-name">WebRTC</div>
+        <div class="stack-desc">P2P voice mesh · RTCPeerConnection · Trickle ICE · Google STUN</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">▶️</div>
+        <div class="stack-name">YouTube IFrame API</div>
+        <div class="stack-desc">Embedded player · seekTo() · onStateChange · zero-bandwidth sync</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🎨</div>
+        <div class="stack-name">Tailwind CSS v4</div>
+        <div class="stack-desc">Custom CSS variables · Radix UI primitives · lucide-react icons</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🔊</div>
+        <div class="stack-name">Web Audio API</div>
+        <div class="stack-desc">Procedural 4-note timer chime via AudioContext oscillators</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🔷</div>
+        <div class="stack-name">TypeScript + Zod</div>
+        <div class="stack-desc">End-to-end type safety · Server Action validation · typed Realtime payloads</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🔑</div>
+        <div class="stack-name">nanoid</div>
+        <div class="stack-desc">6-character collision-resistant room invite codes</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     SLIDE 12 — CLOSING
+══════════════════════════════════════════════════════════════════════════ -->
+<section class="slide center" id="s12">
+  <div class="final-glow"></div>
+  <div class="col gap-12" style="align-items:center; max-width:680px;">
+    <div class="eyebrow" id="s12-ey">EduNest</div>
+    <h1 id="s12-h" style="font-size: clamp(40px, 6vw, 76px);">Study smarter.<br/><span class="accent">Together.</span></h1>
+    <div class="divider center" id="s12-div"></div>
+    <p class="body-lg" id="s12-body" style="text-align:center;">
+      No workarounds. No app-switching. No distractions.<br/>Just a room, your group, and everything you need.
+    </p>
+    <div class="row gap-12" id="s12-chips" style="flex-wrap:wrap; justify-content:center; margin-top:8px;">
+      <span class="chip chip-green">▶️ Synced Video</span>
+      <span class="chip chip-blue">📝 Live Notes</span>
+      <span class="chip chip-purple">🎙 Voice PTT</span>
+      <span class="chip chip-amber">⏱ Study Timer</span>
+      <span class="chip chip-muted">✅ Session Goals</span>
+      <span class="chip chip-muted">🔗 Resources</span>
+    </div>
+    <div class="cta-btn" id="s12-cta">
+      📚 EduNest
+    </div>
+    <p class="body-sm" id="s12-stack" style="margin-top:16px; opacity:0.6;">
+      Next.js 16 · React 19 · Supabase · WebRTC · TypeScript
+    </p>
+  </div>
+</section>
+
+</div><!-- /#deck -->
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const TOTAL = 12;
+let current = 0;
+let animating = false;
+
+const slides = Array.from(document.querySelectorAll('.slide'));
+const counter = document.getElementById('counter');
+const dotsEl  = document.getElementById('dots');
+
+// ── Build dots ─────────────────────────────────────────────────────────────
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+});
+
+function getDots() { return Array.from(dotsEl.querySelectorAll('.dot')); }
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+});
+
+function goTo(n) {
+  if (animating) return;
+  if (n < 0 || n >= TOTAL) return;
+  if (n === current) return;
+  animating = true;
+
+  const outSlide = slides[current];
+  const inSlide  = slides[n];
+  const dir = n > current ? 1 : -1;
+
+  // Update UI chrome
+  current = n;
+  counter.textContent = `${n + 1} / ${TOTAL}`;
+  getDots().forEach((d, i) => d.classList.toggle('active', i === n));
+
+  // Pre-hide all animated children BEFORE the slide becomes visible
+  hideSlideChildren(n);
+
+  // Out animation
+  gsap.to(outSlide, {
+    opacity: 0, y: dir * -24, duration: 0.3, ease: 'power2.in',
+    onComplete: () => {
+      outSlide.classList.remove('active');
+      gsap.set(outSlide, { y: 0 });
+    }
+  });
+
+  // In animation — slide wrapper fades in, then content animates
+  gsap.set(inSlide, { opacity: 0, y: dir * 24 });
+  inSlide.classList.add('active');
+  gsap.to(inSlide, {
+    opacity: 1, y: 0, duration: 0.35, ease: 'power2.out', delay: 0.15,
+    onComplete: () => {
+      animating = false;
+    }
+  });
+
+  // Start content animation slightly after the slide starts appearing
+  setTimeout(() => playSlideAnim(n), 300);
+}
+
+// ── Pre-hide children so they don't flash ──────────────────────────────────
+function hideSlideChildren(n) {
+  const s = slides[n];
+  // Hide all elements that have IDs (they will be animated in by playSlideAnim)
+  // Skip container elements whose children are animated individually
+  const skipIds = new Set(['s1-wordmark', 's1-chips', 's5-chips', 's6-features', 's12-chips',
+    's7-split', 's8-split', 's9-grid', 's10-diagram', 's11-grid', 's4-cards',
+    'bar-discord', 'bar-edunest']);
+  s.querySelectorAll('[id]').forEach(el => {
+    if (skipIds.has(el.id)) return;
+    gsap.set(el, { opacity: 0, y: 16 });
+  });
+  // Also hide non-ID targets used in animations
+  const extraSelectors = {
+    0: '#s1 .letter, #s1-chips .chip',
+    1: '',
+    2: '',
+    3: '#s4-cards .card-red, #s4-cards .card-accent',
+    4: '#s5-chips .chip',
+    5: '#s6-features .chip',
+    6: '#s7-split > *',
+    7: '#s8-split > *',
+    8: '#s9-grid .card',
+    9: '#s10-diagram > *',
+    10: '#s11-grid .stack-card',
+    11: '#s12-chips .chip',
+  };
+  const sel = extraSelectors[n];
+  if (sel) {
+    document.querySelectorAll(sel).forEach(el => {
+      gsap.set(el, { opacity: 0, y: 16 });
+    });
+  }
+  // Reset bars on slide 3
+  if (n === 2) {
+    gsap.set('#bar-discord', { width: '0%' });
+    gsap.set('#bar-edunest', { width: '0%' });
+  }
+}
+
+// ── Per-slide animations ───────────────────────────────────────────────────
+function playSlideAnim(n) {
+  const tl = gsap.timeline();
+
+  if (n === 0) anim_s1(tl);
+  else if (n === 1) anim_s2(tl);
+  else if (n === 2) anim_s3(tl);
+  else if (n === 3) anim_s4(tl);
+  else if (n === 4) anim_s5(tl);
+  else if (n === 5) anim_s6(tl);
+  else if (n === 6) anim_s7(tl);
+  else if (n === 7) anim_s8(tl);
+  else if (n === 8) anim_s9(tl);
+  else if (n === 9) anim_s10(tl);
+  else if (n === 10) anim_s11(tl);
+  else if (n === 11) anim_s12(tl);
+}
+
+// S1 — Hero: letter stagger
+function anim_s1(tl) {
+  const letters = document.querySelectorAll('#s1 .letter');
+  tl.to('#s1-eyebrow', { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' })
+    .to(letters, { y: 0, opacity: 1, stagger: 0.045, duration: 0.5, ease: 'back.out(1.4)' }, '-=0.1')
+    .to('#s1-tagline', { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }, '-=0.1')
+    .to('#s1-chips .chip', { y: 0, opacity: 1, stagger: 0.08, duration: 0.35, ease: 'power2.out' }, '-=0.1');
+}
+
+// S2 — Status quo
+function anim_s2(tl) {
+  tl.to('#s2-ey',   { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s2-h',    { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, '-=0.15')
+    .to('#s2-div',  { y: 0, opacity: 1, scaleX: 1, duration: 0.4 }, '-=0.1')
+    .to('#s2-body', { y: 0, opacity: 1, duration: 0.35 }, '-=0.1')
+    .to('#s2-body2',{ y: 0, opacity: 1, duration: 0.35 }, '-=0.15')
+    .to('#s2-card', { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, '-=0.3');
+}
+
+// S3 — Bandwidth
+function anim_s3(tl) {
+  tl.to('#s3-ey',   { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s3-h',    { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, '-=0.15')
+    .to('#s3-body', { y: 0, opacity: 1, duration: 0.35 }, '-=0.1')
+    .to('#s3-bars', { y: 0, opacity: 1, duration: 0.35 }, '-=0.1')
+    .to('#bar-discord',  { width: '78%', duration: 1.0, ease: 'power2.out' }, '-=0.1')
+    .to('#bar-edunest',  { width: '3%',  duration: 0.6, ease: 'power2.out' }, '-=0.5')
+    .to('#s3-note', { y: 0, opacity: 1, duration: 0.35 }, '-=0.1');
+}
+
+// S4 — Notes chaos
+function anim_s4(tl) {
+  tl.to('#s4-ey',  { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s4-h',   { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, '-=0.15')
+    .to('#s4-div', { y: 0, opacity: 1, scaleX: 1, duration: 0.4 }, '-=0.1')
+    .to('#s4-body',{ y: 0, opacity: 1, duration: 0.35 }, '-=0.1')
+    .to('#s4-cards .card-red, #s4-cards .card-accent', {
+      y: 0, opacity: 1, stagger: 0.12, duration: 0.4, ease: 'power2.out'
+    }, '-=0.1');
+}
+
+// S5 — Distraction
+function anim_s5(tl) {
+  tl.to('#s5-ey',  { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s5-h',   { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, '-=0.15')
+    .to('#s5-div', { y: 0, opacity: 1, scaleX: 1, duration: 0.4 }, '-=0.1')
+    .to('#s5-chips .chip', { y: 0, opacity: 1, scale: 1, stagger: 0.07, duration: 0.3, ease: 'back.out(1.5)' }, '-=0.1')
+    .to('#s5-body',{ y: 0, opacity: 1, duration: 0.35 }, '-=0.0')
+    .to('#s5-card',{ y: 0, opacity: 1, duration: 0.35 }, '-=0.1');
+}
+
+// S6 — Solution
+function anim_s6(tl) {
+  tl.to('#s6-check', { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(2)' })
+    .to('#s6-ey',    { y: 0, opacity: 1, duration: 0.35 }, '-=0.2')
+    .to('#s6-h',     { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, '-=0.15')
+    .to('#s6-sub',   { y: 0, opacity: 1, duration: 0.35 }, '-=0.15')
+    .to('#s6-div',   { y: 0, opacity: 1, scaleX: 1, duration: 0.4 }, '-=0.1')
+    .to('#s6-features .chip', { y: 0, opacity: 1, stagger: 0.07, duration: 0.3, ease: 'power2.out' }, '-=0.0');
+}
+
+// S7 — Video feature
+function anim_s7(tl) {
+  tl.to('#s7-ey',  { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s7-h',   { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, '-=0.15')
+    .to('#s7-sub', { y: 0, opacity: 1, duration: 0.35 }, '-=0.15')
+    .to('#s7-split > *', { y: 0, opacity: 1, stagger: 0.12, duration: 0.45, ease: 'power2.out' }, '-=0.1');
+}
+
+// S8 — Notes feature
+function anim_s8(tl) {
+  tl.to('#s8-ey',  { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s8-h',   { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, '-=0.15')
+    .to('#s8-sub', { y: 0, opacity: 1, duration: 0.35 }, '-=0.15')
+    .to('#s8-split > *', { y: 0, opacity: 1, stagger: 0.12, duration: 0.45, ease: 'power2.out' }, '-=0.1');
+}
+
+// S9 — More features
+function anim_s9(tl) {
+  tl.to('#s9-ey', { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s9-h',  { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, '-=0.15')
+    .to('#s9-grid .card', { y: 0, opacity: 1, stagger: 0.08, duration: 0.4, ease: 'power2.out' }, '-=0.1');
+}
+
+// S10 — Architecture
+function anim_s10(tl) {
+  tl.to('#s10-ey', { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s10-h',  { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, '-=0.15')
+    .to('#s10-diagram > *', { y: 0, opacity: 1, stagger: 0.15, duration: 0.45, ease: 'power2.out' }, '-=0.1');
+}
+
+// S11 — Tech stack
+function anim_s11(tl) {
+  tl.to('#s11-ey', { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s11-h',  { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, '-=0.15')
+    .to('#s11-grid .stack-card', { y: 0, opacity: 1, stagger: 0.06, duration: 0.35, ease: 'power2.out' }, '-=0.1');
+}
+
+// S12 — Closing
+function anim_s12(tl) {
+  tl.to('#s12-ey',    { y: 0, opacity: 1, duration: 0.35 })
+    .to('#s12-h',     { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out' }, '-=0.15')
+    .to('#s12-div',   { y: 0, opacity: 1, scaleX: 1, duration: 0.4 }, '-=0.1')
+    .to('#s12-body',  { y: 0, opacity: 1, duration: 0.35 }, '-=0.1')
+    .to('#s12-chips .chip', { y: 0, opacity: 1, scale: 1, stagger: 0.07, duration: 0.3, ease: 'back.out(1.5)' }, '-=0.05')
+    .to('#s12-cta',   { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.8)' }, '-=0.0')
+    .to('#s12-stack', { y: 0, opacity: 1, duration: 0.35 }, '-=0.1');
+}
+
+// ── Init: show slide 1 ─────────────────────────────────────────────────────
+slides[0].classList.add('active');
+gsap.set(slides[0], { opacity: 1 });
+hideSlideChildren(0);
+setTimeout(() => playSlideAnim(0), 200);
+</script>
+</body>
+</html>

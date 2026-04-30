@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useTransition } from "react";
-import { Send } from "lucide-react";
+import { Send, MessageCircle } from "lucide-react";
 import { saveMessage } from "@/actions/messages";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -69,8 +69,16 @@ export function Chat({
       <ScrollArea className="flex-1 px-4 py-3">
         <div ref={scrollRef} className="space-y-3">
           {messages.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-3xl mb-2">💬</p>
+            <div className="text-center py-12 flex flex-col items-center">
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                style={{ background: "var(--zen-sage-light)" }}
+              >
+                <MessageCircle
+                  className="w-6 h-6"
+                  style={{ color: "var(--zen-sage-dark)" }}
+                />
+              </div>
               <p className="text-sm" style={{ color: "var(--zen-muted)" }}>
                 No messages yet. Say hello!
               </p>

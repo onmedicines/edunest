@@ -21,9 +21,9 @@ export function JoinRoomForm() {
         <Input
           id="room-code"
           name="code"
-          placeholder="e.g. AB3XY9"
+          placeholder="AB3XY9"
           maxLength={6}
-          className="uppercase tracking-widest font-mono text-center text-lg"
+          className="uppercase tracking-[0.3em] font-mono text-center text-lg font-bold"
           required
         />
       </div>
