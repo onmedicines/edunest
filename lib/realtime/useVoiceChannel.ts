@@ -179,6 +179,14 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
     [userId, broadcast]
   );
 
+  const startSpeaking = useCallback(() => {
+    localStreamRef.current?.getAudioTracks().forEach((t) => {
+      t.enabled = true;
+    });
+    setIsSpeaking(true);
+    broadcast(EVENTS.VOICE_SPEAKING, { userId, isSpeaking: true });
+  }, [userId, broadcast]);
+
   const stopSpeaking = useCallback(() => {
     localStreamRef.current?.getAudioTracks().forEach((t) => {
       t.enabled = false;
@@ -423,6 +431,8 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
     participants,
     connect,
     disconnect,
+    startSpeaking,
+    stopSpeaking,
     registerListeners,
   };
 }

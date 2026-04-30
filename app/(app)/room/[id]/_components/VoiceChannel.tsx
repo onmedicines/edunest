@@ -11,6 +11,8 @@ interface VoiceChannelProps {
   currentUserId: string;
   onConnect: () => Promise<void>;
   onDisconnect: () => void;
+  onStartSpeaking: () => void;
+  onStopSpeaking: () => void;
 }
 
 export function VoiceChannel({
@@ -20,6 +22,8 @@ export function VoiceChannel({
   currentUserId,
   onConnect,
   onDisconnect,
+  onStartSpeaking,
+  onStopSpeaking,
 }: VoiceChannelProps) {
   if (!isConnected) {
     return (
@@ -53,7 +57,7 @@ export function VoiceChannel({
             Speaking…
           </span>
         ) : (
-          <span className="text-xs" style={{ color: "var(--zen-muted)" }}>
+          <span className="text-xs hidden sm:block" style={{ color: "var(--zen-muted)" }}>
             Hold <kbd
               className="px-1 py-0.5 rounded text-xs font-mono border"
               style={{ borderColor: "var(--zen-border)", background: "var(--zen-surface)" }}
@@ -62,11 +66,30 @@ export function VoiceChannel({
         )}
         <button
           onClick={onDisconnect}
-          className="p-1 rounded-md transition-colors hover:opacity-70"
+          className="p-1 rounded-md transition-colors hover:opacity-70 ml-auto"
           style={{ color: "var(--zen-error)" }}
           title="Disconnect voice"
         >
           <PhoneOff className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Hold-to-talk button — touch devices */}
+      <div className="px-3 pb-2 sm:hidden">
+        <button
+          onPointerDown={(e) => { e.preventDefault(); onStartSpeaking(); }}
+          onPointerUp={onStopSpeaking}
+          onPointerLeave={onStopSpeaking}
+          className="w-full py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 select-none active:opacity-80 transition-colors"
+          style={{
+            background: isSpeaking ? "var(--zen-sage)" : "var(--zen-surface)",
+            color: isSpeaking ? "#0a0d12" : "var(--zen-muted)",
+            border: `1px solid ${isSpeaking ? "var(--zen-sage)" : "var(--zen-border)"}`,
+            touchAction: "none",
+          }}
+        >
+          {isSpeaking ? <Mic className="w-3.5 h-3.5" /> : <MicOff className="w-3.5 h-3.5" />}
+          {isSpeaking ? "Speaking…" : "Hold to talk"}
         </button>
       </div>
 

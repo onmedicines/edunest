@@ -99,6 +99,8 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
     participants: voiceParticipants,
     connect: voiceConnect,
     disconnect: voiceDisconnect,
+    startSpeaking: voiceStartSpeaking,
+    stopSpeaking: voiceStopSpeaking,
     registerListeners: voiceRegisterListeners,
   } = useVoiceChannel({ userId: currentUser.id, username: currentUser.username });
 
@@ -506,6 +508,8 @@ export function RoomShell({ room, currentUser, initialState }: RoomShellProps) {
           voiceParticipants={voiceParticipants}
           onVoiceConnect={voiceConnect}
           onVoiceDisconnect={voiceDisconnect}
+          onVoiceStartSpeaking={voiceStartSpeaking}
+          onVoiceStopSpeaking={voiceStopSpeaking}
           open={usersDrawerOpen}
           onClose={() => setUsersDrawerOpen(false)}
         />

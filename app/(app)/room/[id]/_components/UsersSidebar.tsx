@@ -20,6 +20,8 @@ interface UsersSidebarProps {
   voiceParticipants: VoiceParticipant[];
   onVoiceConnect: () => Promise<void>;
   onVoiceDisconnect: () => void;
+  onVoiceStartSpeaking: () => void;
+  onVoiceStopSpeaking: () => void;
   // Mobile drawer
   open: boolean;
   onClose: () => void;
@@ -35,6 +37,8 @@ export function UsersSidebar({
   voiceParticipants,
   onVoiceConnect,
   onVoiceDisconnect,
+  onVoiceStartSpeaking,
+  onVoiceStopSpeaking,
   open,
   onClose,
 }: UsersSidebarProps) {
@@ -141,6 +145,8 @@ export function UsersSidebar({
         currentUserId={currentUserId}
         onConnect={onVoiceConnect}
         onDisconnect={onVoiceDisconnect}
+        onStartSpeaking={onVoiceStartSpeaking}
+        onStopSpeaking={onVoiceStopSpeaking}
       />
 
       {/* Hand raise button */}
