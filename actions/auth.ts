@@ -52,39 +52,12 @@ export async function signupWithPassword(
     email,
     password,
     options: {
-      data: { username, is_guest: false },
+      data: { username },
     },
   });
 
   if (error) {
     return { error: error.message };
-  }
-
-  redirect("/rooms");
-}
-
-export async function loginAsGuest(
-  _prevState: ActionState,
-  _formData: FormData
-): Promise<ActionState> {
-  const supabase = await createClient();
-
-  // Use Supabase anonymous sign-in — no email required, no confirmation needed
-  const { data, error } = await supabase.auth.signInAnonymously({
-    options: {
-      data: {
-        username: `Guest ${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
-        is_guest: true,
-      },
-    },
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  if (!data.session) {
-    return { error: "Could not create guest session. Try again." };
   }
 
   redirect("/rooms");

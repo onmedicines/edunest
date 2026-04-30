@@ -31,7 +31,6 @@ interface CurrentUser {
   id: string;
   username: string;
   avatarUrl: string | null;
-  isGuest: boolean;
 }
 
 interface InitialState {

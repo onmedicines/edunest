@@ -77,7 +77,6 @@ export default async function RoomPage({ params }: { params: Promise<{ id: strin
     id: user.id,
     username: user.user_metadata?.username ?? "Anonymous",
     avatarUrl: user.user_metadata?.avatar_url ?? null,
-    isGuest: user.user_metadata?.is_guest ?? false,
   };
 
   return (

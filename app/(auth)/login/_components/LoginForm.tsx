@@ -2,21 +2,16 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { loginWithPassword, loginAsGuest } from "@/actions/auth";
+import { loginWithPassword } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type State = { error?: string; confirmEmail?: boolean } | null;
+type State = { error?: string } | null;
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState<State, FormData>(
     loginWithPassword,
-    null
-  );
-
-  const [guestState, guestAction, guestPending] = useActionState<State, FormData>(
-    loginAsGuest,
     null
   );
 
@@ -53,26 +48,6 @@ export function LoginForm() {
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? "Signing in…" : "Sign in"}
         </Button>
-      </form>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" style={{ borderColor: "var(--zen-border)" }} />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="px-2" style={{ background: "var(--zen-surface)", color: "var(--zen-muted)" }}>
-            or
-          </span>
-        </div>
-      </div>
-
-      <form action={guestAction}>
-        <Button type="submit" variant="secondary" className="w-full" disabled={guestPending}>
-          {guestPending ? "Joining as guest…" : "Continue as Guest"}
-        </Button>
-        {guestState?.error && (
-          <p className="text-xs mt-2" style={{ color: "var(--zen-error)" }}>{guestState.error}</p>
-        )}
       </form>
 
       <p className="text-center text-sm" style={{ color: "var(--zen-muted)" }}>
