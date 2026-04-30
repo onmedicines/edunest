@@ -4,14 +4,13 @@ import { useRef, useEffect, useState, useTransition } from "react";
 import { Send, MessageCircle } from "lucide-react";
 import { saveMessage } from "@/actions/messages";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials, generateAvatarColor } from "@/lib/utils";
 import type { Message } from "@/types/database";
 
 const REACTIONS = ["👍", "🔥", "💡", "❤️", "😂", "🎉"];
 
 interface ChatProps {
-  roomId: string;
   messages: Message[];
   currentUser: { id: string; username: string; avatarUrl: string | null };
   typingUsers: string[];
@@ -24,7 +23,6 @@ interface ChatProps {
 }
 
 export function Chat({
-  roomId,
   messages,
   currentUser,
   typingUsers,

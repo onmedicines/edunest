@@ -3,15 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  BookOpen,
-  Presentation,
-  ArrowRight,
-  Video,
-  Mic,
-  Database,
-  Radio,
-} from "lucide-react";
+import { BookOpen, Presentation, ArrowRight, Video, Mic, Database, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LandingPageProps {
@@ -356,7 +348,7 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
                     className="flex items-start gap-2"
                   >
                     <div
-                      className="w-6 h-6 rounded-full text-[10px] flex items-center justify-center font-semibold flex-shrink-0"
+                      className="w-6 h-6 rounded-full text-[10px] flex items-center justify-center font-semibold shrink-0"
                       style={{ background: row.c, color: "#0a0d12" }}
                     >
                       {row.who[0]}
@@ -382,7 +374,7 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
       {/* ── Features ── */}
       <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-12">
         <div className="text-center mb-12">
-          <div className="deck-eyebrow muted">What's inside</div>
+          <div className="deck-eyebrow muted">What&apos;s inside</div>
           <h2
             className="mt-3 font-extrabold tracking-tight"
             style={{
@@ -433,7 +425,7 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
                 className="zen-card p-5 flex flex-col"
               >
                 <span
-                  className="block w-8 h-[3px] rounded-full mb-4"
+                  className="block w-8 h-0.75 rounded-full mb-4"
                   style={{ background: f.color }}
                   aria-hidden
                 />
@@ -501,7 +493,7 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
               style={{ borderColor: "var(--zen-border)" }}
             >
               <span
-                className="block w-8 h-[3px] rounded-full mb-4"
+                className="block w-8 h-0.75 rounded-full mb-4"
                 style={{ background: f.color }}
                 aria-hidden
               />

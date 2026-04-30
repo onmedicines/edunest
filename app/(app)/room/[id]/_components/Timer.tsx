@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,7 @@ interface TimerProps {
   compact?: boolean;
 }
 
-export function Timer({ roomId, timerState, onTimerChange, compact = false }: TimerProps) {
+export function Timer({ timerState, onTimerChange, compact = false }: TimerProps) {
   const [displaySeconds, setDisplaySeconds] = useState(() =>
     getRemainingSeconds(timerState)
   );
@@ -62,7 +62,7 @@ export function Timer({ roomId, timerState, onTimerChange, compact = false }: Ti
 
   // Keep display in sync with timerState
   useEffect(() => {
-    setDisplaySeconds(getRemainingSeconds(timerState));
+    startTransition(() => setDisplaySeconds(getRemainingSeconds(timerState)));
     hasChimedRef.current = false;
   }, [timerState]);
 

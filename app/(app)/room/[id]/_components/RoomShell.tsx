@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { CHANNEL_NAME, EVENTS } from "@/lib/realtime/types";
-import { getRemainingSeconds } from "@/lib/utils";
 import { useVoiceChannel } from "@/lib/realtime/useVoiceChannel";
 import type {
   Message, Resource, Todo, TimerState, VideoState,

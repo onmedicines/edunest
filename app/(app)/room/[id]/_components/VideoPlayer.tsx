@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, startTransition, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { PlayCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,7 +102,7 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
   // Load YouTube IFrame API
   useEffect(() => {
     if (window.YT?.Player) {
-      setYtReady(true);
+      startTransition(() => setYtReady(true));
       return;
     }
     window.onYouTubeIframeAPIReady = () => setYtReady(true);
