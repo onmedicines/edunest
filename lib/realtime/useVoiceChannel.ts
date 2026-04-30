@@ -49,9 +49,40 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
     channelRef.current?.send({ type: "broadcast", event, payload });
   }, []);
 
+  // ── Cleanup a peer (close pc, remove audio element, remove from lists) ───
+  const cleanupPeer = useCallback((peerId: string) => {
+    const pc = pcsRef.current.get(peerId);
+    if (pc) {
+      pc.onicecandidate = null;
+      pc.ontrack = null;
+      pc.oniceconnectionstatechange = null;
+      pc.onconnectionstatechange = null;
+      pc.close();
+      pcsRef.current.delete(peerId);
+    }
+    const audio = audioElemsRef.current.get(peerId);
+    if (audio) {
+      audio.srcObject = null;
+      audio.remove();
+      audioElemsRef.current.delete(peerId);
+    }
+    pendingIceRef.current.delete(peerId);
+    setParticipants((prev) => prev.filter((x) => x.userId !== peerId));
+  }, []);
+
   // ── Create a peer connection to a remote peer ────────────────────────────
   const createPeerConnection = useCallback(
     (peerId: string): RTCPeerConnection => {
+      // If we already have one (e.g. duplicate offer), tear it down first
+      const existing = pcsRef.current.get(peerId);
+      if (existing) {
+        existing.onicecandidate = null;
+        existing.ontrack = null;
+        existing.oniceconnectionstatechange = null;
+        existing.onconnectionstatechange = null;
+        existing.close();
+      }
+
       const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
       // Add local tracks
@@ -68,9 +99,17 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
         }
       };
 
+      // Recover from dead peers (browser crash, network drop without LEAVE)
+      pc.oniceconnectionstatechange = () => {
+        const state = pc.iceConnectionState;
+        if (state === "failed" || state === "closed") {
+          console.warn(`[voice] peer ${peerId} ice state=${state}, cleaning up`);
+          cleanupPeer(peerId);
+        }
+      };
+
       // Remote audio
       pc.ontrack = ({ track, streams }) => {
-        // Some browsers pass streams=[], fall back to wrapping the track
         const stream = streams[0] ?? (() => {
           const s = new MediaStream();
           s.addTrack(track);
@@ -78,13 +117,17 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
         })();
         let audio = audioElemsRef.current.get(peerId);
         if (!audio) {
-          audio = new Audio();
+          audio = document.createElement("audio");
+          audio.autoplay = true;
+          audio.style.display = "none";
+          // Attaching to DOM avoids autoplay edge-cases in some browsers
+          document.body.appendChild(audio);
           audioElemsRef.current.set(peerId, audio);
         }
         if (audio.srcObject !== stream) {
           audio.srcObject = stream;
-          audio.play().catch(() => {
-            // Autoplay blocked — will resume on next user gesture
+          audio.play().catch((err) => {
+            console.warn(`[voice] autoplay blocked for peer ${peerId}:`, err);
           });
         }
       };
@@ -92,7 +135,7 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
       pcsRef.current.set(peerId, pc);
       return pc;
     },
-    [userId, broadcast]
+    [userId, broadcast, cleanupPeer]
   );
 
   // ── Flush buffered ICE candidates ────────────────────────────────────────
@@ -149,7 +192,22 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
     async () => {
       if (isConnected) return;
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      } catch (err) {
+        console.error("[voice] getUserMedia failed:", err);
+        const e = err as DOMException;
+        const msg =
+          e.name === "NotAllowedError"
+            ? "Microphone permission denied. Allow it in your browser settings to use voice."
+            : e.name === "NotFoundError"
+            ? "No microphone detected."
+            : `Could not access microphone: ${e.message}`;
+        if (typeof window !== "undefined") window.alert(msg);
+        return;
+      }
+
       // Start muted — PTT only
       stream.getAudioTracks().forEach((t) => {
         t.enabled = false;
@@ -163,18 +221,26 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
       // Announce to all peers
       broadcast(EVENTS.VOICE_JOIN, { userId, username });
 
-      // Initiate connections to all existing voice peers
+      // Initiate connections to existing voice peers — but only to peers with
+      // a larger id. Peers with smaller ids will offer to us when they receive
+      // our VOICE_JOIN. This deterministic split prevents simultaneous-offer
+      // glare (both sides creating offers, both stuck in have-local-offer).
       for (const [peerId, peerUsername] of voicePeersRef.current.entries()) {
         if (peerId === userId) continue;
-        const pc = createPeerConnection(peerId);
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        broadcast(EVENTS.VOICE_OFFER, { from: userId, to: peerId, sdp: offer });
-        // Track the peer in our list
+        // Always show them in the list, regardless of who initiates
         setParticipants((prev) => {
           if (prev.find((p) => p.userId === peerId)) return prev;
           return [...prev, { userId: peerId, username: peerUsername, isSpeaking: false }];
         });
+        if (userId >= peerId) continue; // they will offer to us
+        try {
+          const pc = createPeerConnection(peerId);
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          broadcast(EVENTS.VOICE_OFFER, { from: userId, to: peerId, sdp: offer });
+        } catch (err) {
+          console.error(`[voice] failed to create offer to ${peerId}:`, err);
+        }
       }
 
       // PTT bindings
@@ -213,15 +279,10 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
     stream?._cleanupVoice?.();
 
     // Close all peer connections
-    for (const pc of pcsRef.current.values()) {
-      pc.close();
+    for (const peerId of Array.from(pcsRef.current.keys())) {
+      cleanupPeer(peerId);
     }
     pcsRef.current.clear();
-
-    // Stop audio elements
-    for (const audio of audioElemsRef.current.values()) {
-      audio.srcObject = null;
-    }
     audioElemsRef.current.clear();
 
     // Stop local stream
@@ -234,7 +295,7 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
     setIsConnected(false);
     setIsSpeaking(false);
     setParticipants([]);
-  }, [userId, broadcast, stopSpeaking]);
+  }, [userId, broadcast, stopSpeaking, cleanupPeer]);
 
   // ── Register broadcast listeners (called BEFORE channel.subscribe()) ─────
   const registerListeners = useCallback(
@@ -248,17 +309,26 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
 
         voicePeersRef.current.set(p.userId, p.username);
 
-        // If we're connected, create an offer to the new peer
+        // If we're connected, mirror them in our list. We initiate an offer
+        // ONLY when our id is smaller than theirs — otherwise we wait for
+        // their offer (in their connect() loop). This pairs with the rule in
+        // connect() to prevent simultaneous offers / glare.
         if (localStreamRef.current) {
           setParticipants((prev) => {
             if (prev.find((x) => x.userId === p.userId)) return prev;
             return [...prev, { userId: p.userId, username: p.username, isSpeaking: false }];
           });
 
-          const pc = createPeerConnection(p.userId);
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          broadcast(EVENTS.VOICE_OFFER, { from: userId, to: p.userId, sdp: offer });
+          if (userId < p.userId) {
+            try {
+              const pc = createPeerConnection(p.userId);
+              const offer = await pc.createOffer();
+              await pc.setLocalDescription(offer);
+              broadcast(EVENTS.VOICE_OFFER, { from: userId, to: p.userId, sdp: offer });
+            } catch (err) {
+              console.error(`[voice] failed to offer to ${p.userId}:`, err);
+            }
+          }
         }
       });
 
@@ -266,18 +336,7 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
       channel.on("broadcast", { event: EVENTS.VOICE_LEAVE }, ({ payload }) => {
         const p = payload as VoiceLeavePayload;
         voicePeersRef.current.delete(p.userId);
-
-        const pc = pcsRef.current.get(p.userId);
-        pc?.close();
-        pcsRef.current.delete(p.userId);
-
-        const audio = audioElemsRef.current.get(p.userId);
-        if (audio) {
-          audio.srcObject = null;
-          audioElemsRef.current.delete(p.userId);
-        }
-
-        setParticipants((prev) => prev.filter((x) => x.userId !== p.userId));
+        cleanupPeer(p.userId);
       });
 
       // ── VOICE_OFFER: someone is calling us ──
@@ -286,17 +345,23 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
         if (p.to !== userId) return;
         if (!localStreamRef.current) return;
 
-        let pc = pcsRef.current.get(p.from);
-        if (!pc) {
-          pc = createPeerConnection(p.from);
+        try {
+          // If we already had a pc (e.g. renegotiation, stale state), recreate
+          // it so we always start the answer flow from a clean state.
+          let pc = pcsRef.current.get(p.from);
+          if (!pc || pc.signalingState !== "stable") {
+            pc = createPeerConnection(p.from);
+          }
+
+          await pc.setRemoteDescription(p.sdp);
+          await flushPendingIce(p.from, pc);
+
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          broadcast(EVENTS.VOICE_ANSWER, { from: userId, to: p.from, sdp: answer });
+        } catch (err) {
+          console.error(`[voice] failed to handle offer from ${p.from}:`, err);
         }
-
-        await pc.setRemoteDescription(new RTCSessionDescription(p.sdp));
-        await flushPendingIce(p.from, pc);
-
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        broadcast(EVENTS.VOICE_ANSWER, { from: userId, to: p.from, sdp: answer });
       });
 
       // ── VOICE_ANSWER: our offer was answered ──
@@ -306,9 +371,18 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
 
         const pc = pcsRef.current.get(p.from);
         if (!pc) return;
+        if (pc.signalingState !== "have-local-offer") {
+          // Out-of-state answer (e.g. arrived after we tore the pc down). Drop it.
+          console.warn(`[voice] dropping answer from ${p.from}, signalingState=${pc.signalingState}`);
+          return;
+        }
 
-        await pc.setRemoteDescription(new RTCSessionDescription(p.sdp));
-        await flushPendingIce(p.from, pc);
+        try {
+          await pc.setRemoteDescription(p.sdp);
+          await flushPendingIce(p.from, pc);
+        } catch (err) {
+          console.error(`[voice] failed to apply answer from ${p.from}:`, err);
+        }
       });
 
       // ── VOICE_ICE: trickle ICE candidate ──
@@ -326,9 +400,9 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
         }
 
         try {
-          await pc.addIceCandidate(new RTCIceCandidate(p.candidate));
-        } catch {
-          // ignore stale candidates
+          await pc.addIceCandidate(p.candidate);
+        } catch (err) {
+          console.warn(`[voice] addIceCandidate failed from ${p.from}:`, err);
         }
       });
 
@@ -340,7 +414,7 @@ export function useVoiceChannel({ userId, username }: UseVoiceChannelOptions) {
         );
       });
     },
-    [userId, broadcast, createPeerConnection, flushPendingIce]
+    [userId, broadcast, createPeerConnection, flushPendingIce, cleanupPeer]
   );
 
   return {
