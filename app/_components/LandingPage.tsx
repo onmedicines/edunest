@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Presentation, ArrowRight, Video, Mic, Database, Radio } from "lucide-react";
+import { BookOpen, Presentation, ArrowRight, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LandingPageProps {
@@ -50,13 +50,6 @@ const features: Feature[] = [
   },
 ];
 
-const stack = [
-  { name: "Next.js 16", desc: "App router, server actions" },
-  { name: "Supabase", desc: "Auth, Postgres, Realtime" },
-  { name: "WebRTC", desc: "Peer-to-peer voice" },
-  { name: "YouTube IFrame", desc: "Synced playback" },
-];
-
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0 },
@@ -68,7 +61,11 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
   const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: "var(--zen-bg)" }} onClick={() => setSelectedFeature(null)}>
+    <div
+      className="relative min-h-screen overflow-hidden"
+      style={{ background: "var(--zen-bg)" }}
+      onClick={() => setSelectedFeature(null)}
+    >
       {/* ── Nav ── */}
       <header className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5">
@@ -86,16 +83,6 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
             style={{ color: "var(--zen-text)" }}
           >
             EduNest
-          </span>
-          <span
-            className="hidden sm:inline-flex font-mono text-[10px] px-1.5 py-0.5 rounded ml-1"
-            style={{
-              color: "var(--zen-muted)",
-              border: "1px solid var(--zen-border)",
-              background: "var(--zen-surface-2)",
-            }}
-          >
-            v0.1
           </span>
         </Link>
         <nav className="flex items-center gap-2 sm:gap-3">
@@ -168,9 +155,12 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
           {"Edu".split("").map((c, i) => (
             <motion.span
               key={`e-${i}`}
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.05 * i, ease: [0.2, 0.8, 0.2, 1] }}
+              transition={{
+                opacity: { duration: 0.3, delay: 0.05 * i },
+                y: { type: "spring", stiffness: 320, damping: 22, delay: 0.05 * i },
+              }}
               className="inline-block font-black"
             >
               {c}
@@ -179,9 +169,12 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
           {"Nest".split("").map((c, i) => (
             <motion.span
               key={`n-${i}`}
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.05 * (i + 3), ease: [0.2, 0.8, 0.2, 1] }}
+              transition={{
+                opacity: { duration: 0.3, delay: 0.05 * (i + 3) },
+                y: { type: "spring", stiffness: 320, damping: 22, delay: 0.05 * (i + 3) },
+              }}
               className="inline-block accent-letter font-black"
               style={{ color: "var(--zen-sage)" }}
             >
@@ -204,11 +197,14 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="relative mt-8 flex flex-wrap gap-12 justify-center"
+          className="relative mt-8 flex items-center gap-2 justify-center text-sm"
+          style={{ color: "var(--zen-muted)" }}
         >
-          <span className="deck-chip deck-chip-green">Study-first</span>
-          <span className="deck-chip deck-chip-blue">Real-time</span>
-          <span className="deck-chip deck-chip-purple">Distraction-free</span>
+          <span>Study-first</span>
+          <span aria-hidden>·</span>
+          <span>Real-time</span>
+          <span aria-hidden>·</span>
+          <span>Distraction-free</span>
         </motion.div>
 
         <motion.div
@@ -390,7 +386,7 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
         </div>
         {/* Fanned card hand — desktop */}
         <div
-          className="hidden lg:flex justify-center items-end relative mx-auto"
+          className="hidden lg:flex justify-center items-end relative mx-auto mb-12"
           style={{ minHeight: 460, perspective: 1200, paddingTop: 40, paddingBottom: 60 }}
         >
           {features.map((f, i) => {
@@ -453,14 +449,17 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
         </div>
 
         {/* Card switcher buttons (desktop) */}
-        <div className="hidden lg:flex justify-center flex-wrap gap-2 mt-2 mb-2">
+        <div className="hidden lg:flex justify-center flex-wrap gap-2 mt-2 mb-24">
           {features.map((f, i) => {
             const isActive = selectedFeature !== null && selectedFeature === i;
             return (
               <button
                 key={f.title}
                 type="button"
-                onClick={(e) => { e.stopPropagation(); setSelectedFeature(i); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedFeature(i);
+                }}
                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                 style={{
                   background: isActive ? f.color : "var(--zen-surface-2)",
@@ -516,46 +515,6 @@ export function LandingPage({ isAuthed, username }: LandingPageProps) {
                 {f.desc}
               </p>
             </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Tech stack strip (deck S11 vibe) ── */}
-      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-2 pb-12">
-        <div className="text-center mb-6">
-          <div className="deck-eyebrow muted">Built with</div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {stack.map((s) => (
-            <div
-              key={s.name}
-              className="rounded-xl p-4 transition-colors hover:opacity-100"
-              style={{
-                background: "var(--zen-surface-2)",
-                border: "1px solid var(--zen-border)",
-              }}
-            >
-              <div className="flex items-center gap-2 mb-1.5">
-                {s.name.startsWith("Next") && (
-                  <Radio className="w-3.5 h-3.5" style={{ color: "var(--zen-sage)" }} />
-                )}
-                {s.name.startsWith("Supabase") && (
-                  <Database className="w-3.5 h-3.5" style={{ color: "var(--zen-sage)" }} />
-                )}
-                {s.name.startsWith("WebRTC") && (
-                  <Mic className="w-3.5 h-3.5" style={{ color: "var(--zen-sage)" }} />
-                )}
-                {s.name.startsWith("YouTube") && (
-                  <Video className="w-3.5 h-3.5" style={{ color: "var(--zen-sage)" }} />
-                )}
-                <span className="font-semibold text-sm" style={{ color: "var(--zen-text)" }}>
-                  {s.name}
-                </span>
-              </div>
-              <span className="font-mono text-[11px]" style={{ color: "var(--zen-muted)" }}>
-                {s.desc}
-              </span>
-            </div>
           ))}
         </div>
       </section>

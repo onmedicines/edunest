@@ -112,53 +112,65 @@ export function StudySceneArt() {
         </motion.div>
       ))}
 
-      {/* Brand block */}
-      <div className="absolute inset-x-0 bottom-0 p-10 sm:p-12 z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="deck-eyebrow muted mb-3"
-        >
-          A focused, real-time study room
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="deck-wordmark"
-          style={{
-            fontSize: "clamp(40px, 5vw, 64px)",
-            color: "var(--zen-text)",
-          }}
-        >
-          Edu<span className="accent-letter" style={{ color: "var(--zen-sage)" }}>Nest</span>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="deck-divider mt-4"
-        />
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-5 max-w-md text-sm sm:text-base"
-          style={{ color: "var(--zen-muted)" }}
-        >
-          Synced video, shared notes, voice rooms, and a focus timer — built for study groups, not chaos.
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-5 flex flex-wrap gap-2"
-        >
-          <span className="deck-chip deck-chip-green"><BookOpen className="w-3 h-3" /> Study-first</span>
-          <span className="deck-chip deck-chip-blue"><Zap className="w-3 h-3" /> Real-time</span>
-          <span className="deck-chip deck-chip-purple"><Lock className="w-3 h-3" /> Distraction-free</span>
-        </motion.div>
+      {/* Full-panel blur — floaters sit behind this */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+        }}
+        aria-hidden
+      />
+
+      {/* Brand block — centered, above the blur */}
+      <div className="absolute inset-0 flex items-center justify-center z-10 p-10 text-center">
+        <div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="deck-eyebrow muted mb-3"
+          >
+            A focused, real-time study room
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="deck-wordmark"
+            style={{
+              fontSize: "clamp(40px, 5vw, 64px)",
+              color: "var(--zen-text)",
+            }}
+          >
+            Edu<span className="accent-letter" style={{ color: "var(--zen-sage)" }}>Nest</span>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="deck-divider mt-4 mx-auto"
+          />
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="mt-5 max-w-xs mx-auto text-sm sm:text-base"
+            style={{ color: "var(--zen-muted)" }}
+          >
+            Synced video, shared notes, voice rooms, and a focus timer — built for study groups, not chaos.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="mt-5 flex flex-wrap gap-2 justify-center"
+          >
+            <span className="deck-chip deck-chip-green"><BookOpen className="w-3 h-3" /> Study-first</span>
+            <span className="deck-chip deck-chip-blue"><Zap className="w-3 h-3" /> Real-time</span>
+            <span className="deck-chip deck-chip-purple"><Lock className="w-3 h-3" /> Distraction-free</span>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
